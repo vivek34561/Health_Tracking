@@ -9,13 +9,6 @@ Database Engine: MySQL 8.x
 Purpose:
 Store user health information, activity records, goals, reports, notifications, AI interactions, and RAG-related documents.
 
-Design Goals:
-
-* Normalized schema (3NF)
-* High read performance
-* Scalable for future wearable integrations
-* AI-ready architecture
-* Audit-friendly data model
 
 ---
 
