@@ -7,12 +7,14 @@ import { WaterComponent } from './features/water-logs/water';
 import { SleepComponent } from './features/sleep-logs/sleep';
 import { ActivityComponent } from './features/activity-logs/activity';
 import { GoalsComponent } from './features/goals/goals';
+import { ProfileComponent } from './features/profile/profile';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
+  { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: 'weight', component: WeightComponent, canActivate: [authGuard] },
   { path: 'water', component: WaterComponent, canActivate: [authGuard] },
   { path: 'sleep', component: SleepComponent, canActivate: [authGuard] },

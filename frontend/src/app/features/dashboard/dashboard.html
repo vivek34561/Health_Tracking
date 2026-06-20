@@ -1,75 +1,134 @@
-<div class="dashboard-container">
-  <header class="dashboard-header">
-    <div class="welcome">
-      <h1>Hello, {{ authService.currentUser()?.name || 'User' }}! 👋</h1>
-      <p class="subtitle">Here is an overview of your health modules.</p>
+<div class="dashboard-shell">
+  @if (errorMessage()) {
+    <div class="alert alert-danger" style="margin: 1rem 0; padding: 1rem; border-radius: 8px; background: rgba(220, 53, 69, 0.15); color: #f8d7da; border: 1px solid rgba(220, 53, 69, 0.2);">
+      {{ errorMessage() }}
     </div>
-  </header>
-
-  <div class="modules-grid">
-    <!-- Weight Tracking Module (ACTIVE) -->
-    <div class="module-card active">
-      <div class="module-icon font-gradient">⚖️</div>
-      <div class="module-info">
-        <h3>Weight Tracking</h3>
-        <p>Monitor your weight records, see history logs, and visualize progress trends.</p>
-        <div class="badge success-badge">Active</div>
-      </div>
-      <div class="module-footer">
-        <a routerLink="/weight" class="btn btn-primary btn-sm">Open Module</a>
-      </div>
+  }
+  <section class="dashboard-hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Today's health summary</p>
+      <h1>Hello, {{ authService.currentUser()?.name || 'Health Champion' }} 👋</h1>
+      <p class="subtitle">Your daily wellness snapshot, activity progress, and smart recommendations — all in one premium view.</p>
     </div>
 
-    <!-- Water Tracking Module (ACTIVE) -->
-    <div class="module-card active">
-      <div class="module-icon font-gradient">💧</div>
-      <div class="module-info">
-        <h3>Water Tracking</h3>
-        <p>Log your daily water intake and ensure you hit your hydration goals.</p>
-        <div class="badge success-badge">Active</div>
+    <div class="hero-status-card glass-card">
+      <div class="status-header">
+        <div>
+          <span class="eyebrow">Health Score</span>
+          <h2 class="score-value">92</h2>
+        </div>
+        <span class="badge-pill">Excellent</span>
       </div>
-      <div class="module-footer">
-        <a routerLink="/water" class="btn btn-primary btn-sm">Open Module</a>
+      <p class="small-text">Smart metrics based on sleep, hydration, activity, and goal completion.</p>
+      <div class="hero-actions">
+        <a routerLink="/weight" class="btn btn-primary">Log Weight</a>
+        <a routerLink="/water" class="btn btn-secondary">Log Water</a>
       </div>
+    </div>
+  </section>
+
+  <section class="summary-grid">
+    <article class="metric-card glass-card">
+      <div class="metric-header">
+        <span class="metric-icon">💧</span>
+        <span class="metric-label">Water intake</span>
+        <span class="metric-value">{{ dashboardData()?.water_consumed || 0 }} ml</span>
+      </div>
+      <p class="metric-small">Track water consumption and stay hydrated throughout the day.</p>
+      <div class="progress-ring"></div>
+    </article>
+
+    <article class="metric-card glass-card">
+      <div class="metric-header">
+        <span class="metric-icon">🌙</span>
+        <span class="metric-label">Sleep average</span>
+        <span class="metric-value">{{ dashboardData()?.sleep_hours || 0 }} hrs</span>
+      </div>
+      <p class="metric-small">Week-over-week sleep quality and duration insight.</p>
+      <div class="metric-footer">
+        <span>Quality</span>
+        <strong>{{ dashboardData()?.sleep_quality || 0 }}/10</strong>
+      </div>
+    </article>
+
+    <article class="metric-card glass-card">
+      <div class="metric-header">
+        <span class="metric-icon">🏃</span>
+        <span class="metric-label">Activity</span>
+        <span class="metric-value">{{ dashboardData()?.activities_today || 0 }} sessions</span>
+      </div>
+      <p class="metric-small">Review weekly workouts, calories, and movement goals.</p>
+      <div class="metric-footer">
+        <span>Calories</span>
+        <strong>{{ dashboardData()?.calories_burned_today || 0 }} kcal</strong>
+      </div>
+    </article>
+
+    <article class="metric-card glass-card">
+      <div class="metric-header">
+        <span class="metric-icon">⚖️</span>
+        <span class="metric-label">Latest weight</span>
+        <span class="metric-value">{{ dashboardData()?.current_weight ? (dashboardData()?.current_weight | number:'1.1-1') + ' kg' : '— kg' }}</span>
+      </div>
+      <p class="metric-small">Your most recent body snapshot and trend progress.</p>
+      <div class="metric-footer">
+        <span>Change</span>
+        <strong>{{ getWeightChangeText(dashboardData()?.weight_change) }}</strong>
+      </div>
+    </article>
+  </section>
+
+  <section class="dashboard-panels">
+    <div class="panel-row">
+      <article class="chart-card glass-card">
+        <div class="card-heading">
+          <h3>Weight trend</h3>
+          <span class="small-text">Weekly progress</span>
+        </div>
+        <div class="chart-placeholder">
+          <div class="chart-dot-grid"></div>
+          <div class="chart-labels">
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="progress-card glass-card">
+        <div class="card-heading">
+          <h3>Goal progress</h3>
+          <span class="small-text">Your action completion status</span>
+        </div>
+        <div class="goal-grid">
+          <div>
+            <span>Active</span>
+            <strong>{{ dashboardData()?.active_goals || 0 }}</strong>
+          </div>
+          <div>
+            <span>Completed</span>
+            <strong>{{ dashboardData()?.completed_goals || 0 }}</strong>
+          </div>
+          <div>
+            <span>Failed</span>
+            <strong>{{ dashboardData()?.failed_goals || 0 }}</strong>
+          </div>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-bar-fill" [style.width.%]="dashboardData()?.goal_completion || 0"></div>
+        </div>
+      </article>
     </div>
 
-    <!-- Sleep Tracking Module (ACTIVE) -->
-    <div class="module-card active">
-      <div class="module-icon font-gradient">🌙</div>
-      <div class="module-info">
-        <h3>Sleep Tracking</h3>
-        <p>Log your sleep intervals, analyze duration, and monitor quality scores.</p>
-        <div class="badge success-badge">Active</div>
+    <article class="insight-card glass-card">
+      <div class="card-heading">
+        <h3>✨ AI health summary</h3>
+        <span class="badge-pill">Recommendations</span>
       </div>
-      <div class="module-footer">
-        <a routerLink="/sleep" class="btn btn-primary btn-sm">Open Module</a>
-      </div>
-    </div>
-
-    <!-- Activity Tracking Module (ACTIVE) -->
-    <div class="module-card active">
-      <div class="module-icon font-gradient">🏃‍♂️</div>
-      <div class="module-info">
-        <h3>Activity Logs</h3>
-        <p>Track your physical workouts, active duration, and calories burned.</p>
-        <div class="badge success-badge">Active</div>
-      </div>
-      <div class="module-footer">
-        <a routerLink="/activity" class="btn btn-primary btn-sm">Open Module</a>
-      </div>
-    </div>
-
-    <!-- Goals Module (ACTIVE) -->
-    <div class="module-card active">
-      <div class="module-icon font-gradient">🎯</div>
-      <div class="module-info">
-        <h3>Goal Setter</h3>
-        <p>Establish active targets for weight, sleep, hydration, and exercise.</p>
-        <div class="badge success-badge">Active</div>
-      </div>
-      <div class="module-footer">
-        <a routerLink="/goals" class="btn btn-primary btn-sm">Open Module</a>
-      </div>
-    </div>
-  </div>
+      <p class="small-text" style="margin-bottom: 0.5rem;">Personalized guidance to keep your energy balanced, improve sleep, and stay consistently hydrated.</p>
+      <ul class="insight-list">
+        <li>💧 Drink 250 ml of water before your next snack.</li>
+        <li>🌙 Keep bedtime consistent for better recovery.</li>
+        <li>🏃 Aim for one extra active session before the weekend.</li>
+      </ul>
+    </article>
+  </section>
 </div>

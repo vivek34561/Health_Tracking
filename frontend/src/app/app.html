@@ -1,41 +1,48 @@
 @if (authService.isAuthenticated()) {
   <div class="app-layout">
-    <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <div class="sidebar-header">
         <span class="logo-icon">⚡</span>
-        <h2>HealthAI</h2>
+        <div>
+          <h2>HealthAI</h2>
+          <p class="small-text">Your premium health companion</p>
+        </div>
       </div>
 
-      <nav class="sidebar-menu">
-        <a routerLink="/dashboard" routerLinkActive="active" class="menu-item">
+      <nav class="sidebar-menu" aria-label="Main navigation">
+        <span class="sidebar-section-label">Overview</span>
+        <a routerLink="/dashboard" routerLinkActive="active" class="menu-item" id="nav-dashboard">
           <span class="menu-icon">📊</span>
           <span class="menu-text">Dashboard</span>
         </a>
-        <a routerLink="/weight" routerLinkActive="active" class="menu-item">
+
+        <span class="sidebar-section-label">Health Metrics</span>
+        <a routerLink="/weight" routerLinkActive="active" class="menu-item" id="nav-weight">
           <span class="menu-icon">⚖️</span>
-          <span class="menu-text">Weight Tracker</span>
+          <span class="menu-text">Weight</span>
         </a>
-        <a routerLink="/water" routerLinkActive="active" class="menu-item">
+        <a routerLink="/water" routerLinkActive="active" class="menu-item" id="nav-water">
           <span class="menu-icon">💧</span>
-          <span class="menu-text">Water Tracker</span>
+          <span class="menu-text">Water</span>
         </a>
-        <a routerLink="/sleep" routerLinkActive="active" class="menu-item">
+        <a routerLink="/sleep" routerLinkActive="active" class="menu-item" id="nav-sleep">
           <span class="menu-icon">🌙</span>
-          <span class="menu-text">Sleep Tracker</span>
+          <span class="menu-text">Sleep</span>
         </a>
-        <a routerLink="/activity" routerLinkActive="active" class="menu-item">
+        <a routerLink="/activity" routerLinkActive="active" class="menu-item" id="nav-activity">
           <span class="menu-icon">🏃‍♂️</span>
-          <span class="menu-text">Activity Logs</span>
+          <span class="menu-text">Activity</span>
         </a>
-        <a routerLink="/goals" routerLinkActive="active" class="menu-item">
+
+        <span class="sidebar-section-label">Goals</span>
+        <a routerLink="/goals" routerLinkActive="active" class="menu-item" id="nav-goals">
           <span class="menu-icon">🎯</span>
-          <span class="menu-text">Goal Setter</span>
+          <span class="menu-text">Goals</span>
         </a>
       </nav>
 
       <div class="sidebar-footer">
-        <div class="user-badge">
+        <a routerLink="/profile" class="user-badge" id="nav-profile">
           <div class="avatar">
             {{ (authService.currentUser()?.name || 'U').charAt(0).toUpperCase() }}
           </div>
@@ -43,16 +50,17 @@
             <span class="user-name">{{ authService.currentUser()?.name }}</span>
             <span class="user-email">{{ authService.currentUser()?.email }}</span>
           </div>
-        </div>
-        <button (click)="authService.logout()" class="btn-logout">
-          <span class="logout-icon">🚪</span> Logout
+        </a>
+        <button (click)="authService.logout()" class="btn-logout" id="btn-signout">
+          <span class="logout-icon">🚪</span> Sign Out
         </button>
       </div>
     </aside>
 
-    <!-- Main Content Wrapper -->
     <main class="main-content">
-      <router-outlet></router-outlet>
+      <div class="page-content">
+        <router-outlet></router-outlet>
+      </div>
     </main>
   </div>
 } @else {

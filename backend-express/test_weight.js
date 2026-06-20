@@ -84,9 +84,38 @@ async function testWeight() {
     if (!historyRes.ok) throw new Error('Get weight history failed');
     if (historyData.length !== 2) throw new Error(`Expected 2 records, got ${historyData.length}`);
 
-    // The order should be descending (recorded_at DESC), so the record2 (created latest) should be index 0
     if (parseFloat(historyData[0].weight) !== weight2) {
       throw new Error('History ordering or weight matches incorrect.');
+    }
+
+    // 5b. Test Upsert: Post weight again on the same date (today)
+    console.log('\n5b. Testing Upsert: POST /api/weights again on the same date...');
+    const upsertWeight = 82.5;
+    const upsertRes = await fetch(`${BASE_URL}/weights`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ weight: upsertWeight })
+    });
+    console.log('Upsert status:', upsertRes.status);
+    const upsertData = await upsertRes.json();
+    console.log('Upsert response:', upsertData);
+    if (upsertRes.status !== 200) throw new Error(`Expected status 200, got ${upsertRes.status}`);
+    if (upsertData.id !== record2Id) throw new Error(`Expected ID to remain ${record2Id}, got ${upsertData.id}`);
+
+    // Verify history length is still 2, and the weight for today's record has updated
+    console.log('Verifying history after upsert...');
+    const historyRes2 = await fetch(`${BASE_URL}/weights`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const historyData2 = await historyRes2.json();
+    console.log('History records after upsert:', historyData2);
+    if (historyData2.length !== 2) throw new Error(`Expected 2 records, got ${historyData2.length}`);
+    const targetUpsert = historyData2.find(item => item.id === record2Id);
+    if (parseFloat(targetUpsert.weight) !== upsertWeight) {
+      throw new Error(`Expected weight ${upsertWeight}, got ${targetUpsert.weight}`);
     }
 
     // 6. Update Weight log

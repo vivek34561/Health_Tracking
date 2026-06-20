@@ -35,9 +35,17 @@ export class LoginComponent {
     const { email, password } = this.loginForm.value;
 
     this.authService.login(email!, password!).subscribe({
-      next: () => {
+      next: (response) => {
         this.isLoading.set(false);
-        this.router.navigate(['/dashboard']);
+        
+        // Verify token is set before navigating
+        if (response?.token && this.authService.isAuthenticated()) {
+          this.router.navigate(['/dashboard']).catch(() => {
+            this.errorMessage.set('Failed to navigate to dashboard. Please try again.');
+          });
+        } else {
+          this.errorMessage.set('Login failed. Token not received. Please try again.');
+        }
       },
       error: (err) => {
         this.isLoading.set(false);

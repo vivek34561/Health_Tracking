@@ -1,161 +1,355 @@
-.dashboard-container {
-  padding: 30px;
-  box-sizing: border-box;
-}
+/* ===================================================
+   DASHBOARD — Premium Layout
+   =================================================== */
 
-.dashboard-header {
-  margin-bottom: 40px;
-}
-
-.dashboard-header h1 {
-  font-family: 'Outfit', sans-serif;
-  font-size: 32px;
-  font-weight: 700;
-  margin: 0 0 8px 0;
-  color: #ffffff;
-  letter-spacing: -0.5px;
-}
-
-.subtitle {
-  color: #9ca3af;
-  font-size: 16px;
-  margin: 0;
-}
-
-.modules-grid {
+.dashboard-shell {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 25px;
+  gap: 2rem;
+  animation: fadeIn 0.4s ease-out both;
 }
 
-.module-card {
-  background: rgba(30, 41, 59, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 24px;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Hero Section ────────────────────────────────── */
+.dashboard-hero {
+  display: grid;
+  grid-template-columns: 1.65fr 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.hero-copy {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  min-height: 280px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-sizing: border-box;
+  gap: 0.9rem;
+  padding: 0.5rem 0;
 }
 
-.module-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(255, 255, 255, 0.1);
-  background: rgba(30, 41, 59, 0.6);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+.hero-copy h1 {
+  font-size: clamp(1.6rem, 3vw, 2.6rem);
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.12;
+  background: linear-gradient(135deg, #ffffff 30%, rgba(94, 234, 212, 0.85) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.module-card.active {
+.hero-copy .subtitle {
+  color: rgba(226, 232, 240, 0.65);
+  max-width: 520px;
+  font-size: 0.93rem;
+  line-height: 1.7;
+}
+
+/* Hero Score Card */
+.hero-status-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  padding: 1.75rem;
+  background:
+    linear-gradient(140deg, rgba(20, 184, 166, 0.16) 0%, rgba(14, 165, 233, 0.08) 60%, rgba(10, 18, 35, 0.92) 100%),
+    var(--bg-panel);
+  border: 1px solid rgba(20, 184, 166, 0.18);
+  border-radius: 24px;
+  backdrop-filter: blur(24px);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255,255,255,0.04) inset;
   position: relative;
   overflow: hidden;
 }
 
-.module-card.active::before {
+.hero-status-card::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%);
+  top: -40px;
+  right: -40px;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.18) 0%, transparent 70%);
+  pointer-events: none;
 }
 
-.module-card.locked {
-  opacity: 0.75;
+.status-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
-.module-icon {
-  font-size: 36px;
-  margin-bottom: 20px;
-  display: inline-block;
-}
-
-.font-gradient {
-  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+.score-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin: 0.1rem 0 0 0;
+  background: linear-gradient(135deg, #2dd4bf 0%, #38bdf8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  letter-spacing: -0.04em;
 }
 
-.module-info {
-  flex-grow: 1;
-}
-
-.module-info h3 {
-  font-family: 'Outfit', sans-serif;
-  font-size: 20px;
-  font-weight: 600;
-  color: #ffffff;
-  margin: 0 0 10px 0;
-}
-
-.module-info p {
-  font-size: 13px;
-  color: #9ca3af;
-  line-height: 1.6;
-  margin: 0 0 20px 0;
-}
-
-.badge {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.success-badge {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-.locked-badge {
-  background: rgba(156, 163, 175, 0.1);
-  color: #9ca3af;
-  border: 1px solid rgba(156, 163, 175, 0.15);
-}
-
-.module-footer {
-  margin-top: 24px;
-}
-
-.btn {
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 10px 18px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
+.hero-actions {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  text-decoration: none;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: auto;
 }
 
-.btn-sm {
+/* ─── Summary Grid ────────────────────────────────── */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.1rem;
+}
+
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1.4rem 1.5rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-accent);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+}
+
+.metric-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 0 0 20px 20px;
+  background: linear-gradient(90deg, #14B8A6, #0EA5E9);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.metric-card:hover::after { opacity: 1; }
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.metric-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.metric-label {
+  color: rgba(226, 232, 240, 0.58);
+  font-size: 0.8rem;
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+  letter-spacing: 0.01em;
+}
+
+.metric-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  letter-spacing: -0.03em;
+}
+
+.metric-small {
+  color: rgba(226, 232, 240, 0.55);
+  font-size: 0.83rem;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.metric-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: rgba(226, 232, 240, 0.62);
+  font-size: 0.82rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.metric-footer strong { color: #ffffff; font-weight: 700; }
+
+.progress-ring {
+  height: 80px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at top left, rgba(20, 184, 166, 0.09), transparent 60%),
+    rgba(255, 255, 255, 0.025);
+}
+
+/* ─── Dashboard Panels ────────────────────────────── */
+.dashboard-panels {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.panel-row {
+  display: grid;
+  grid-template-columns: 1.65fr 1fr;
+  gap: 1.1rem;
+}
+
+.chart-card,
+.progress-card,
+.insight-card {
+  padding: 1.65rem;
+}
+
+.card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.card-heading h3 { margin: 0; }
+
+/* Chart placeholder */
+.chart-placeholder {
+  min-height: 180px;
+  position: relative;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+  overflow: hidden;
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.chart-dot-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+
+.chart-labels {
+  position: absolute;
+  bottom: 1rem;
+  left: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: rgba(226, 232, 240, 0.45);
+}
+
+/* Goal progress */
+.goal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.15rem;
+}
+
+.goal-grid div {
+  padding: 0.9rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  text-align: center;
+  transition: background 0.2s ease;
+}
+
+.goal-grid div:hover { background: rgba(255, 255, 255, 0.055); }
+
+.goal-grid span {
+  display: block;
+  color: rgba(226, 232, 240, 0.55);
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.goal-grid strong {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+}
+
+.progress-bar {
   width: 100%;
-  box-sizing: border-box;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.065);
 }
 
-.btn-primary {
-  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-  color: #0f172a;
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #14B8A6, #0EA5E9);
+  border-radius: 999px;
+  transition: width 0.6s ease;
+  box-shadow: 0 0 8px rgba(20, 184, 166, 0.4);
 }
 
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 242, 254, 0.35);
+/* Insight card */
+.insight-list {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+  list-style: none;
+  padding: 0;
 }
 
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  color: #4b5563;
-  cursor: not-allowed;
+.insight-list li {
+  padding: 0.9rem 1.1rem;
+  border-radius: 14px;
+  background: rgba(20, 184, 166, 0.07);
+  border: 1px solid rgba(20, 184, 166, 0.10);
+  color: rgba(226, 232, 240, 0.85);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.insight-list li:hover {
+  background: rgba(20, 184, 166, 0.12);
+  border-color: rgba(20, 184, 166, 0.18);
+}
+
+/* ─── Responsive ──────────────────────────────────── */
+@media (max-width: 1100px) {
+  .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+  .dashboard-hero,
+  .panel-row { grid-template-columns: 1fr; }
+  .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 580px) {
+  .summary-grid { grid-template-columns: 1fr; }
+  .goal-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }

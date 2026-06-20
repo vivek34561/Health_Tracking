@@ -1,0 +1,71 @@
+<section class="profile-page glass-card">
+  <header class="profile-header">
+    <div>
+      <h1>Profile</h1>
+      <p class="subtitle">Manage your account and update your health profile details.</p>
+    </div>
+    <div class="profile-header-actions">
+      <button class="btn btn-secondary" type="button" (click)="enableEdit()" *ngIf="!isEditing()">Edit profile</button>
+      <button class="btn btn-secondary" type="button" (click)="cancelEdit()" *ngIf="isEditing()">Cancel</button>
+      <button class="btn btn-primary" type="button" (click)="saveProfile()" [disabled]="isSaving()" *ngIf="isEditing()">{{ isSaving() ? 'Saving...' : 'Save changes' }}</button>
+    </div>
+  </header>
+
+  <form [formGroup]="profileForm" class="profile-grid">
+    <div class="profile-card glass-card">
+      <h2>Account details</h2>
+      <div class="field-group">
+        <label>Name</label>
+        <input type="text" formControlName="name" [disabled]="!isEditing()" />
+        <span class="field-error" *ngIf="profileForm.get('name')?.touched && profileForm.get('name')?.invalid">Name is required.</span>
+      </div>
+
+      <div class="field-group">
+        <label>Email</label>
+        <input type="email" formControlName="email" [disabled]="!isEditing()" />
+        <span class="field-error" *ngIf="profileForm.get('email')?.touched && profileForm.get('email')?.invalid">Enter a valid email.</span>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>Age</label>
+          <input type="number" formControlName="age" [disabled]="!isEditing()" />
+        </div>
+        <div class="field-group">
+          <label>Height</label>
+          <input type="text" formControlName="height" [disabled]="!isEditing()" />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>Weight</label>
+          <input type="text" formControlName="weight" [disabled]="!isEditing()" />
+        </div>
+        <div class="field-group">
+          <label>Activity level</label>
+          <input type="text" formControlName="activityLevel" [disabled]="!isEditing()" />
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-card glass-card">
+      <h2>Security</h2>
+      <p class="profile-note">Your account settings are secured. Changing profile details here will update your saved user record.</p>
+
+      <div class="status-messages">
+        <p class="success-message" *ngIf="successMessage()">{{ successMessage() }}</p>
+        <p class="error-message" *ngIf="errorMessage()">{{ errorMessage() }}</p>
+      </div>
+
+      <div class="profile-actions" *ngIf="!isEditing()">
+        <button class="btn btn-primary" type="button" (click)="enableEdit()">Edit profile</button>
+      </div>
+
+      <div class="profile-actions" *ngIf="isEditing()">
+        <button class="btn btn-secondary" type="button" (click)="cancelEdit()">Cancel</button>
+        <button class="btn btn-primary" type="button" (click)="saveProfile()" [disabled]="isSaving()">{{ isSaving() ? 'Saving...' : 'Save changes' }}</button>
+      </div>
+    </div>
+  </form>
+</section>

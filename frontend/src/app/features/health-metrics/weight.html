@@ -82,6 +82,48 @@
         }
       </div>
 
+      <!-- Interactive Calendar Card -->
+      <div class="glass-card calendar-card animate-fade-in">
+        <div class="calendar-header">
+          <h3>Weight Calendar 📅</h3>
+          <div class="calendar-nav">
+            <button type="button" (click)="prevMonth()" class="btn-calendar-nav" title="Previous Month">‹</button>
+            <span class="current-month">{{ currentMonthDate() | date: 'MMMM yyyy' }}</span>
+            <button type="button" (click)="nextMonth()" class="btn-calendar-nav" title="Next Month">›</button>
+          </div>
+        </div>
+
+        <div class="calendar-weekdays">
+          <span>Sun</span>
+          <span>Mon</span>
+          <span>Tue</span>
+          <span>Wed</span>
+          <span>Thu</span>
+          <span>Fri</span>
+          <span>Sat</span>
+        </div>
+
+        <div class="calendar-grid">
+          @for (day of calendarDays(); track day.date) {
+            <button 
+              type="button"
+              (click)="selectDate(day)"
+              class="calendar-day-btn"
+              [class.outside-month]="!day.isCurrentMonth"
+              [class.today]="day.isToday"
+              [class.selected]="selectedDate() && isSameDay(day.date, selectedDate()!)"
+              [class.has-weight]="day.weightRecord !== null"
+            >
+              <span class="day-num">{{ day.dayNum }}</span>
+              @if (day.weightRecord) {
+                <span class="weight-dot"></span>
+                <span class="weight-label-mini">{{ day.weightRecord.weight | number: '1.0-1' }}</span>
+              }
+            </button>
+          }
+        </div>
+      </div>
+
       <!-- Logs History List -->
       <div class="glass-card list-card">
         <h3>Log History</h3>
@@ -106,10 +148,10 @@
               </thead>
               <tbody>
                 @for (log of logs(); track log.id) {
-                  <tr [class.highlight]="editingRecordId() === log.id">
+                  <tr [class.highlight]="editingRecordId() === log.id" (click)="startEdit(log)" class="history-row">
                     <td class="weight-cell">{{ log.weight | number: '1.1-2' }} kg</td>
                     <td class="date-cell">{{ log.recordedAt | date: 'dd MMM yyyy, HH:mm' }}</td>
-                    <td class="actions-cell">
+                    <td class="actions-cell" (click)="$event.stopPropagation()">
                       <button (click)="startEdit(log)" class="btn-action edit" title="Edit Entry">✏️</button>
                       <button (click)="deleteRecord(log.id)" class="btn-action delete" title="Delete Entry">🗑️</button>
                     </td>
@@ -126,7 +168,12 @@
     <!-- Right column: Add / Edit Weight card -->
     <div class="right-col">
       <div class="glass-card form-card">
-        <h3>{{ editingRecordId() !== null ? 'Edit Weight Log' : 'Log New Weight' }}</h3>
+        <h3>
+          {{ editingRecordId() !== null ? 'Edit Weight Log' : 'Log New Weight' }}
+          @if (selectedDate()) {
+            <span class="selected-date-badge">for {{ selectedDate() | date: 'dd MMM yyyy' }}</span>
+          }
+        </h3>
         
         <form [formGroup]="weightForm" (ngSubmit)="onSubmit()" class="metric-form">
           <div class="form-group">

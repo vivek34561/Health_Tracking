@@ -57,10 +57,22 @@ async function getLatestWeight(userId) {
   return rows[0] ? rows[0].weight : null;
 }
 
+/**
+ * Get weight log for a user by calendar date
+ */
+async function getByDate(userId, date) {
+  const [rows] = await db.execute(
+    'SELECT id, weight_kg AS weight, recorded_at AS recordedAt FROM weight_logs WHERE user_id = ? AND DATE(recorded_at) = DATE(?) LIMIT 1',
+    [userId, date]
+  );
+  return rows[0] || null;
+}
+
 module.exports = {
   create,
   getHistory,
   update,
   delete: deleteRecord,
-  getLatestWeight
+  getLatestWeight,
+  getByDate
 };

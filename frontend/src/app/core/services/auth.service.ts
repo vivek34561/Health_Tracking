@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, delay } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -40,7 +40,9 @@ export class AuthService {
           localStorage.setItem('ht_token', response.token);
           localStorage.setItem('ht_user', JSON.stringify(response.user));
         }
-      })
+      }),
+      // Ensure signals are propagated before navigation
+      delay(150)
     );
   }
 

@@ -10,6 +10,7 @@ const waterRoutes = require('./routes/waterRoutes');
 const sleepRoutes = require('./routes/sleepRoutes');
 const activityRoutes = require('./routes/activityRoutes');
 const goalRoutes = require('./routes/goalRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 const app = express();
 
@@ -33,6 +34,9 @@ app.use('/api/activities', activityRoutes);
 
 // Goals routes
 app.use('/api/goals', goalRoutes);
+
+// Dashboard routes
+app.use('/api/dashboard', dashboardRoutes);
 
 // Root path handler
 app.use((req, res, next) => {

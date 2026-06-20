@@ -31,7 +31,22 @@ async function addWeight(req, res) {
       });
     }
 
-    const recordId = await weightModel.create(userId, weightNum, recordedAt);
+    const dateToLog = recordedAt ? new Date(recordedAt) : new Date();
+
+    // Check if a weight log already exists for this date
+    const existing = await weightModel.getByDate(userId, dateToLog);
+    if (existing) {
+      const updated = await weightModel.update(userId, existing.id, weightNum, dateToLog);
+      if (updated) {
+        return res.status(200).json({
+          success: true,
+          message: 'Weight record updated successfully',
+          id: existing.id
+        });
+      }
+    }
+
+    const recordId = await weightModel.create(userId, weightNum, dateToLog);
 
     return res.status(201).json({
       success: true,
