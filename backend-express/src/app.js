@@ -5,6 +5,11 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const authRoutes = require('./routes/authRoutes');
+const weightRoutes = require('./routes/weightRoutes');
+const waterRoutes = require('./routes/waterRoutes');
+const sleepRoutes = require('./routes/sleepRoutes');
+const activityRoutes = require('./routes/activityRoutes');
+const goalRoutes = require('./routes/goalRoutes');
 
 const app = express();
 
@@ -13,6 +18,21 @@ app.use(express.json());
 
 // Auth routes
 app.use('/api/auth', authRoutes);
+
+// Weight routes
+app.use('/api/weights', weightRoutes);
+
+// Water routes
+app.use('/api/water', waterRoutes);
+
+// Sleep routes
+app.use('/api/sleep', sleepRoutes);
+
+// Activity routes
+app.use('/api/activities', activityRoutes);
+
+// Goals routes
+app.use('/api/goals', goalRoutes);
 
 // Root path handler
 app.use((req, res, next) => {
