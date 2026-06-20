@@ -1,0 +1,318 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Settings</h1>
+      <p class="page-subtitle">Customize your HealthAI experience</p>
+    </div>
+  </div>
+
+  <!-- Appearance Section -->
+  <div class="settings-section card card-body animate-fade-in">
+    <div class="settings-section-header">
+      <div class="settings-icon settings-icon-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="settings-title">Appearance</h2>
+        <p class="settings-subtitle">Choose your preferred color theme</p>
+      </div>
+    </div>
+
+    <div class="theme-cards">
+      <!-- Light -->
+      <div class="theme-card" [class.active]="themeService.theme() === 'light'" (click)="setTheme('light')" id="theme-light" role="button" tabindex="0">
+        <div class="theme-preview theme-preview-light">
+          <div class="preview-sidebar"></div>
+          <div class="preview-content">
+            <div class="preview-bar"></div>
+            <div class="preview-bar preview-bar-short"></div>
+          </div>
+        </div>
+        <div class="theme-card-info">
+          <span class="theme-name">Light</span>
+          @if (themeService.theme() === 'light') {
+            <span class="theme-active-badge">Active</span>
+          }
+        </div>
+      </div>
+
+      <!-- Dark -->
+      <div class="theme-card" [class.active]="themeService.theme() === 'dark'" (click)="setTheme('dark')" id="theme-dark" role="button" tabindex="0">
+        <div class="theme-preview theme-preview-dark">
+          <div class="preview-sidebar"></div>
+          <div class="preview-content">
+            <div class="preview-bar"></div>
+            <div class="preview-bar preview-bar-short"></div>
+          </div>
+        </div>
+        <div class="theme-card-info">
+          <span class="theme-name">Dark</span>
+          @if (themeService.theme() === 'dark') {
+            <span class="theme-active-badge">Active</span>
+          }
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="theme-card" [class.active]="themeService.theme() === 'system'" (click)="setTheme('system')" id="theme-system" role="button" tabindex="0">
+        <div class="theme-preview theme-preview-system">
+          <div class="preview-split">
+            <div class="split-light">
+              <div class="preview-sidebar"></div>
+            </div>
+            <div class="split-dark">
+              <div class="preview-sidebar"></div>
+            </div>
+          </div>
+        </div>
+        <div class="theme-card-info">
+          <span class="theme-name">System Default</span>
+          @if (themeService.theme() === 'system') {
+            <span class="theme-active-badge">Active</span>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Daily Goals Section -->
+  <div class="settings-section card card-body animate-fade-in">
+    <div class="settings-section-header">
+      <div class="settings-icon settings-icon-success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="settings-title">Daily Goals</h2>
+        <p class="settings-subtitle">Configure your daily health targets</p>
+      </div>
+    </div>
+
+    <div class="goals-settings-grid">
+      <div class="goal-setting-item">
+        <div class="goal-setting-label">
+          <span class="goal-icon">💧</span>
+          <div>
+            <strong>Daily Water Goal</strong>
+            <p>Target water intake per day</p>
+          </div>
+        </div>
+        <div class="goal-setting-control">
+          <input class="form-control goal-input" type="number" id="goal-water"
+            min="500" max="10000" step="250"
+            [value]="goals().water"
+            (input)="updateGoal('water', +$any($event.target).value)">
+          <span class="goal-unit">ml</span>
+        </div>
+      </div>
+
+      <div class="goal-setting-item">
+        <div class="goal-setting-label">
+          <span class="goal-icon">😴</span>
+          <div>
+            <strong>Daily Sleep Goal</strong>
+            <p>Target sleep duration per night</p>
+          </div>
+        </div>
+        <div class="goal-setting-control">
+          <input class="form-control goal-input" type="number" id="goal-sleep"
+            min="4" max="12" step="0.5"
+            [value]="goals().sleep"
+            (input)="updateGoal('sleep', +$any($event.target).value)">
+          <span class="goal-unit">hours</span>
+        </div>
+      </div>
+
+      <div class="goal-setting-item">
+        <div class="goal-setting-label">
+          <span class="goal-icon">🚶</span>
+          <div>
+            <strong>Daily Steps Goal</strong>
+            <p>Target step count per day</p>
+          </div>
+        </div>
+        <div class="goal-setting-control">
+          <input class="form-control goal-input" type="number" id="goal-steps"
+            min="1000" max="50000" step="500"
+            [value]="goals().steps"
+            (input)="updateGoal('steps', +$any($event.target).value)">
+          <span class="goal-unit">steps</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-save-row">
+      <button class="btn btn-primary btn-sm" (click)="saveGoals()" id="save-goals-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/>
+        </svg>
+        Save Goals
+      </button>
+    </div>
+  </div>
+
+  <!-- Notifications Section -->
+  <div class="settings-section card card-body animate-fade-in">
+    <div class="settings-section-header">
+      <div class="settings-icon settings-icon-warning">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="settings-title">Notifications</h2>
+        <p class="settings-subtitle">Manage your reminder preferences</p>
+      </div>
+    </div>
+
+    <div class="toggle-list">
+      <div class="toggle-item">
+        <div class="toggle-info">
+          <span class="toggle-icon">💧</span>
+          <div>
+            <strong>Water Reminders</strong>
+            <p>Remind me to drink water throughout the day</p>
+          </div>
+        </div>
+        <button class="toggle-switch" [class.on]="notifToggles().water" (click)="toggleNotif('water')" id="notif-water" role="switch" [attr.aria-checked]="notifToggles().water">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+
+      <div class="toggle-item">
+        <div class="toggle-info">
+          <span class="toggle-icon">😴</span>
+          <div>
+            <strong>Sleep Reminders</strong>
+            <p>Remind me to log my sleep every morning</p>
+          </div>
+        </div>
+        <button class="toggle-switch" [class.on]="notifToggles().sleep" (click)="toggleNotif('sleep')" id="notif-sleep" role="switch" [attr.aria-checked]="notifToggles().sleep">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+
+      <div class="toggle-item">
+        <div class="toggle-info">
+          <span class="toggle-icon">🏃</span>
+          <div>
+            <strong>Activity Reminders</strong>
+            <p>Remind me to log my workouts</p>
+          </div>
+        </div>
+        <button class="toggle-switch" [class.on]="notifToggles().activity" (click)="toggleNotif('activity')" id="notif-activity" role="switch" [attr.aria-checked]="notifToggles().activity">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+
+      <div class="toggle-item">
+        <div class="toggle-info">
+          <span class="toggle-icon">📊</span>
+          <div>
+            <strong>Weekly Reports</strong>
+            <p>Notify me when my weekly report is ready</p>
+          </div>
+        </div>
+        <button class="toggle-switch" [class.on]="notifToggles().weekly" (click)="toggleNotif('weekly')" id="notif-weekly" role="switch" [attr.aria-checked]="notifToggles().weekly">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+
+      <div class="toggle-item">
+        <div class="toggle-info">
+          <span class="toggle-icon">🏆</span>
+          <div>
+            <strong>Achievements</strong>
+            <p>Notify me when I unlock milestones</p>
+          </div>
+        </div>
+        <button class="toggle-switch" [class.on]="notifToggles().achievements" (click)="toggleNotif('achievements')" id="notif-achievements" role="switch" [attr.aria-checked]="notifToggles().achievements">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Privacy & Data Section -->
+  <div class="settings-section card card-body animate-fade-in">
+    <div class="settings-section-header">
+      <div class="settings-icon settings-icon-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="settings-title">Privacy & Data</h2>
+        <p class="settings-subtitle">Manage your health data</p>
+      </div>
+    </div>
+
+    <div class="privacy-actions">
+      <div class="privacy-action-item">
+        <div class="privacy-action-info">
+          <strong>Export My Data</strong>
+          <p>Download a copy of your settings and notification data as JSON.</p>
+        </div>
+        <button class="btn btn-secondary btn-sm" (click)="exportData()" id="export-data-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Export JSON
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- About Section -->
+  <div class="settings-section card card-body animate-fade-in">
+    <div class="settings-section-header">
+      <div class="settings-icon settings-icon-muted">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="settings-title">About</h2>
+        <p class="settings-subtitle">App information and status</p>
+      </div>
+    </div>
+
+    <div class="about-list">
+      <div class="about-item">
+        <span class="about-label">Application</span>
+        <span class="about-value">HealthAI Tracker</span>
+      </div>
+      <div class="about-item">
+        <span class="about-label">Version</span>
+        <span class="about-value">v{{ appVersion }}</span>
+      </div>
+      <div class="about-item">
+        <span class="about-label">Framework</span>
+        <span class="about-value">Angular 22</span>
+      </div>
+      <div class="about-item">
+        <span class="about-label">Backend Status</span>
+        <div class="about-status-row">
+          @if (backendStatus() === 'checking') {
+            <span class="status-dot dot-checking"></span>
+            <span class="about-value">Checking...</span>
+          } @else if (backendStatus() === 'online') {
+            <span class="status-dot dot-online"></span>
+            <span class="about-value status-online">Online</span>
+          } @else {
+            <span class="status-dot dot-offline"></span>
+            <span class="about-value status-offline">Offline</span>
+          }
+          <button class="recheck-btn" (click)="recheckStatus()" id="recheck-status-btn" title="Recheck status">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

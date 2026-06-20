@@ -1,0 +1,243 @@
+<div class="page-container">
+
+  @if (isLoading()) {
+    <div class="profile-skeleton">
+      <div class="skeleton" style="height:220px;border-radius:20px;margin-bottom:24px"></div>
+      <div class="skeleton" style="height:380px;border-radius:16px"></div>
+    </div>
+  } @else {
+
+  <!-- Hero Section -->
+  <div class="profile-hero animate-fade-in">
+    <div class="profile-avatar-wrap">
+      <div class="profile-avatar-ring"></div>
+      <div class="profile-avatar">
+        {{ getUserInitials() }}
+      </div>
+      <button class="avatar-edit-btn" title="Change photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        </svg>
+      </button>
+    </div>
+    <div class="profile-hero-info">
+      <h1 class="profile-name">{{ profileForm().name || 'Your Name' }}</h1>
+      <p class="profile-email">{{ profileForm().email }}</p>
+      <div class="profile-stats-row">
+        @if (profileForm().age) {
+          <div class="profile-stat-chip">
+            <span class="psc-icon">🎂</span>
+            <span>{{ profileForm().age }} yrs</span>
+          </div>
+        }
+        @if (profileForm().height) {
+          <div class="profile-stat-chip">
+            <span class="psc-icon">📏</span>
+            <span>{{ profileForm().height }} cm</span>
+          </div>
+        }
+        @if (profileForm().weight) {
+          <div class="profile-stat-chip">
+            <span class="psc-icon">⚖️</span>
+            <span>{{ profileForm().weight }} kg</span>
+          </div>
+        }
+        @if (bmi()) {
+          <div class="profile-stat-chip bmi-chip" [style.border-color]="bmiCategory()?.color" [style.color]="bmiCategory()?.color">
+            <span>BMI {{ bmi()! | number:'1.1-1' }}</span>
+            <span class="bmi-label">{{ bmiCategory()?.label }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Personal Details Form -->
+  <div class="profile-section card card-body animate-fade-in-up">
+    <div class="section-header">
+      <div class="section-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="section-title">Personal Details</h2>
+        <p class="section-subtitle">Update your personal information</p>
+      </div>
+    </div>
+
+    <form class="profile-form" (submit)="saveProfile(); $event.preventDefault()">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="profile-name">Full Name</label>
+          <input class="form-control" id="profile-name" type="text" placeholder="Your full name"
+            [value]="profileForm().name"
+            (input)="updateFormField('name', $any($event.target).value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="profile-email">Email Address</label>
+          <input class="form-control" id="profile-email" type="email" placeholder="your@email.com"
+            [value]="profileForm().email"
+            (input)="updateFormField('email', $any($event.target).value)">
+        </div>
+      </div>
+
+      <div class="form-row form-row-3">
+        <div class="form-group">
+          <label class="form-label" for="profile-age">Age (years)</label>
+          <input class="form-control" id="profile-age" type="number" min="1" max="120" placeholder="25"
+            [value]="profileForm().age || ''"
+            (input)="updateFormField('age', +$any($event.target).value || null)">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="profile-height">Height (cm)</label>
+          <input class="form-control" id="profile-height" type="number" min="50" max="300" placeholder="170"
+            [value]="profileForm().height || ''"
+            (input)="updateFormField('height', +$any($event.target).value || null)">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="profile-weight">Weight (kg)</label>
+          <input class="form-control" id="profile-weight" type="number" min="20" max="500" step="0.1" placeholder="70"
+            [value]="profileForm().weight || ''"
+            (input)="updateFormField('weight', +$any($event.target).value || null)">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="profile-gender">Gender</label>
+          <select class="form-control form-select" id="profile-gender"
+            [value]="profileForm().gender"
+            (change)="updateFormField('gender', $any($event.target).value)">
+            <option value="">Select gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="non-binary">Non-binary</option>
+            <option value="prefer-not-to-say">Prefer not to say</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="profile-activity">Activity Level</label>
+          <select class="form-control form-select" id="profile-activity"
+            [value]="profileForm().activityLevel"
+            (change)="updateFormField('activityLevel', $any($event.target).value)">
+            <option value="">Select activity level</option>
+            <option value="sedentary">Sedentary (little or no exercise)</option>
+            <option value="light">Lightly Active (1-3 days/week)</option>
+            <option value="moderate">Moderately Active (3-5 days/week)</option>
+            <option value="active">Very Active (6-7 days/week)</option>
+            <option value="extra">Extra Active (athlete level)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- BMI Card -->
+      @if (bmi()) {
+        <div class="bmi-info-card" [style.border-color]="bmiCategory()?.color + '40'">
+          <div class="bmi-info-icon" [style.color]="bmiCategory()?.color">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+            </svg>
+          </div>
+          <div class="bmi-info-text">
+            <strong>Your BMI: {{ bmi()! | number:'1.1-1' }}</strong> — {{ bmiCategory()?.label }}
+            <p>Based on your height ({{ profileForm().height }}cm) and weight ({{ profileForm().weight }}kg).</p>
+          </div>
+        </div>
+      }
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="save-profile-btn" [disabled]="isSaving()">
+          @if (isSaving()) {
+            <span class="spinner"></span> Saving...
+          } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+            </svg>
+            Save Changes
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Change Password Section -->
+  <div class="profile-section card card-body animate-fade-in-up">
+    <div class="section-header section-header-toggle" (click)="showPasswordSection.set(!showPasswordSection())" role="button" tabindex="0">
+      <div class="section-icon section-icon-warning">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="section-title">Change Password</h2>
+        <p class="section-subtitle">Update your account password</p>
+      </div>
+      <svg class="toggle-chevron" [class.rotated]="showPasswordSection()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </div>
+
+    @if (showPasswordSection()) {
+      <div class="password-form animate-fade-in">
+        <div class="form-group">
+          <label class="form-label" for="current-password">Current Password</label>
+          <input class="form-control" id="current-password" type="password" placeholder="Enter current password"
+            [value]="passwordForm().currentPassword"
+            (input)="passwordForm.update(f => ({ ...f, currentPassword: $any($event.target).value }))">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="new-password">New Password</label>
+            <input class="form-control" id="new-password" type="password" placeholder="Min 6 characters"
+              [value]="passwordForm().newPassword"
+              (input)="passwordForm.update(f => ({ ...f, newPassword: $any($event.target).value }))">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="confirm-password">Confirm New Password</label>
+            <input class="form-control" id="confirm-password" type="password" placeholder="Re-enter new password"
+              [value]="passwordForm().confirmPassword"
+              (input)="passwordForm.update(f => ({ ...f, confirmPassword: $any($event.target).value }))">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" (click)="changePassword()" id="change-password-btn" [disabled]="isChangingPassword()">
+          @if (isChangingPassword()) {
+            <span class="spinner"></span> Updating...
+          } @else {
+            Update Password
+          }
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Danger Zone -->
+  <div class="profile-section danger-zone card card-body animate-fade-in-up">
+    <div class="section-header section-header-toggle" (click)="showDangerZone.set(!showDangerZone())" role="button" tabindex="0">
+      <div class="section-icon section-icon-danger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="section-title danger-title">Danger Zone</h2>
+        <p class="section-subtitle">Irreversible actions</p>
+      </div>
+      <svg class="toggle-chevron" [class.rotated]="showDangerZone()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </div>
+    @if (showDangerZone()) {
+      <div class="danger-content animate-fade-in">
+        <div class="danger-item">
+          <div class="danger-item-info">
+            <strong>Delete Account</strong>
+            <p>Permanently delete your account and all associated health data. This cannot be undone.</p>
+          </div>
+          <button class="btn btn-danger btn-sm" id="delete-account-btn">Delete Account</button>
+        </div>
+      </div>
+    }
+  </div>
+  }
+</div>

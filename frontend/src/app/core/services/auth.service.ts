@@ -56,6 +56,13 @@ export class AuthService {
   }
 
   /**
+   * Change user password
+   */
+  changePassword(currentPassword: string, newPassword: string): Observable<any> {
+    return this.http.put(`${this.baseUrl}/change-password`, { currentPassword, newPassword });
+  }
+
+  /**
    * Update profile info and cache
    */
   updateProfile(profileData: any): Observable<any> {

@@ -1,0 +1,204 @@
+<div class="page-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">
+        <span class="text-gradient">AI</span> Health Insights
+      </h1>
+      <p class="page-subtitle">Smart recommendations powered by your personal health data</p>
+    </div>
+    <div class="ai-badge">
+      <div class="ai-pulse"></div>
+      <span>AI Analysis Active</span>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <!-- Skeleton Loader -->
+    <div class="insights-skeleton">
+      <div class="skeleton" style="height:180px;border-radius:20px"></div>
+      <div class="insights-skeleton-grid">
+        @for (i of [1,2,3,4,5]; track i) {
+          <div class="skeleton" style="height:180px;border-radius:16px"></div>
+        }
+      </div>
+    </div>
+  } @else {
+
+    <!-- AI Score Summary Card -->
+    <div class="score-hero-card animate-fade-in">
+      <div class="score-hero-left">
+        <div class="ai-avatar">
+          <div class="ai-avatar-ring"></div>
+          <div class="ai-avatar-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10z"/>
+              <path d="M12 7v5l3 3"/>
+              <path d="M3.05 11a9 9 0 1 0 .5-2.6"/>
+            </svg>
+          </div>
+        </div>
+        <div class="score-hero-text">
+          <div class="ai-greeting">Good {{ authService.currentUser()?.name?.split(' ')[0] || 'there' }}! Here's your health summary.</div>
+          <div class="ai-score-label">Overall Health Score</div>
+          <div class="ai-score-value" [style.color]="getScoreColor()">{{ overallScore() }}</div>
+          <div class="ai-score-grade" [style.color]="getScoreColor()">{{ getScoreLabel() }}</div>
+        </div>
+      </div>
+      <div class="score-hero-right">
+        <div class="insight-count-pills">
+          <div class="insight-pill pill-good">
+            <span class="pill-dot dot-good"></span>
+            <span>{{ goodInsights().length }} Good</span>
+          </div>
+          <div class="insight-pill pill-improve">
+            <span class="pill-dot dot-improve"></span>
+            <span>{{ improveInsights().length }} To Improve</span>
+          </div>
+          <div class="insight-pill pill-critical">
+            <span class="pill-dot dot-critical"></span>
+            <span>{{ criticalInsights().length }} Critical</span>
+          </div>
+        </div>
+        <p class="ai-disclaimer">Based on your logged health data. Not a medical diagnosis.</p>
+      </div>
+    </div>
+
+    @if (insights().length === 0) {
+      <!-- Empty State -->
+      <div class="empty-state animate-fade-in">
+        <div class="empty-icon">🤖</div>
+        <div class="empty-title">Not enough data yet</div>
+        <p class="empty-description">Start logging your health data (water, sleep, weight, activities) and your AI health coach will generate personalized recommendations.</p>
+        <a routerLink="/dashboard" class="btn btn-primary">Go to Dashboard</a>
+      </div>
+    } @else {
+
+      <!-- Critical Insights -->
+      @if (criticalInsights().length > 0) {
+        <div class="section-block animate-fade-in">
+          <div class="section-header-row">
+            <div class="section-badge badge-critical-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              Needs Immediate Attention
+            </div>
+          </div>
+          <div class="insights-grid">
+            @for (insight of criticalInsights(); track insight.id) {
+              <div class="insight-card card-critical animate-fade-in-up">
+                <div class="insight-header">
+                  <div class="insight-emoji">{{ insight.icon }}</div>
+                  <div class="insight-status-dot dot-critical"></div>
+                </div>
+                <div class="insight-metric-row">
+                  <span class="insight-metric-label">{{ insight.metric }}</span>
+                  <span class="insight-metric-value critical-text">{{ insight.value }}</span>
+                </div>
+                <h3 class="insight-title">{{ insight.title }}</h3>
+                <p class="insight-desc">{{ insight.description }}</p>
+                <div class="insight-action-bar">
+                  <span class="insight-tag tag-critical">Critical</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Improvement Insights -->
+      @if (improveInsights().length > 0) {
+        <div class="section-block animate-fade-in">
+          <div class="section-header-row">
+            <div class="section-badge badge-improve-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                <polyline points="18 15 12 9 6 15"/>
+              </svg>
+              Areas to Improve
+            </div>
+          </div>
+          <div class="insights-grid">
+            @for (insight of improveInsights(); track insight.id) {
+              <div class="insight-card card-improve animate-fade-in-up">
+                <div class="insight-header">
+                  <div class="insight-emoji">{{ insight.icon }}</div>
+                  <div class="insight-status-dot dot-improve"></div>
+                </div>
+                <div class="insight-metric-row">
+                  <span class="insight-metric-label">{{ insight.metric }}</span>
+                  <span class="insight-metric-value improve-text">{{ insight.value }}</span>
+                </div>
+                <h3 class="insight-title">{{ insight.title }}</h3>
+                <p class="insight-desc">{{ insight.description }}</p>
+                <div class="insight-action-bar">
+                  <span class="insight-tag tag-improve">Needs Improvement</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Good Insights -->
+      @if (goodInsights().length > 0) {
+        <div class="section-block animate-fade-in">
+          <div class="section-header-row">
+            <div class="section-badge badge-good-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              Doing Great
+            </div>
+          </div>
+          <div class="insights-grid">
+            @for (insight of goodInsights(); track insight.id) {
+              <div class="insight-card card-good animate-fade-in-up">
+                <div class="insight-header">
+                  <div class="insight-emoji">{{ insight.icon }}</div>
+                  <div class="insight-status-dot dot-good"></div>
+                </div>
+                <div class="insight-metric-row">
+                  <span class="insight-metric-label">{{ insight.metric }}</span>
+                  <span class="insight-metric-value good-text">{{ insight.value }}</span>
+                </div>
+                <h3 class="insight-title">{{ insight.title }}</h3>
+                <p class="insight-desc">{{ insight.description }}</p>
+                <div class="insight-action-bar">
+                  <span class="insight-tag tag-good">On Track</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Quick Actions -->
+      <div class="quick-actions-row animate-fade-in">
+        <h3 class="section-mini-title">Log More Data for Better Insights</h3>
+        <div class="quick-actions-grid">
+          <a routerLink="/water" class="quick-action-card">
+            <span class="qa-icon">💧</span>
+            <span class="qa-label">Log Water</span>
+          </a>
+          <a routerLink="/sleep" class="quick-action-card">
+            <span class="qa-icon">😴</span>
+            <span class="qa-label">Log Sleep</span>
+          </a>
+          <a routerLink="/activity" class="quick-action-card">
+            <span class="qa-icon">🏃</span>
+            <span class="qa-label">Log Activity</span>
+          </a>
+          <a routerLink="/weight" class="quick-action-card">
+            <span class="qa-icon">⚖️</span>
+            <span class="qa-label">Log Weight</span>
+          </a>
+          <a routerLink="/goals" class="quick-action-card">
+            <span class="qa-icon">🎯</span>
+            <span class="qa-label">Set Goals</span>
+          </a>
+        </div>
+      </div>
+    }
+  }
+</div>

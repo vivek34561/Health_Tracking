@@ -1,0 +1,247 @@
+<div class="page-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Health Reports</h1>
+      <p class="page-subtitle">Detailed analysis of your health metrics and trends</p>
+    </div>
+    <button class="btn btn-secondary" (click)="printReport()" id="print-report-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px">
+        <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+        <rect x="6" y="14" width="12" height="8"/>
+      </svg>
+      Download PDF
+    </button>
+  </div>
+
+  <!-- Tab Switcher -->
+  <div class="tab-bar">
+    <button class="tab-btn" [class.active]="activeTab() === 'weekly'" (click)="setTab('weekly')" id="tab-weekly">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      Weekly
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'monthly'" (click)="setTab('monthly')" id="tab-monthly">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+      </svg>
+      Monthly
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'progress'" (click)="setTab('progress')" id="tab-progress">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+      Progress
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-section">
+      <div class="reports-skeleton-grid">
+        @for (i of [1,2,3,4]; track i) {
+          <div class="skeleton" style="height:180px;border-radius:16px"></div>
+        }
+      </div>
+    </div>
+  } @else if (error()) {
+    <div class="alert alert-error">{{ error() }}</div>
+  } @else {
+
+    <!-- WEEKLY TAB -->
+    @if (activeTab() === 'weekly') {
+      <div class="reports-content animate-fade-in">
+        @if (weeklyReport()) {
+          <div class="week-meta">
+            <h2 class="week-title">Week of {{ weeklyReport()?.week }}</h2>
+          </div>
+
+          <div class="report-averages-grid">
+            <div class="avg-card avg-blue">
+              <div class="avg-icon">💧</div>
+              <div class="avg-value">{{ weeklyReport()?.averages?.water | number:'1.0-0' }}</div>
+              <div class="avg-label">Avg Water / Day (ml)</div>
+            </div>
+            <div class="avg-card avg-purple">
+              <div class="avg-icon">😴</div>
+              <div class="avg-value">{{ weeklyReport()?.averages?.sleep | number:'1.1-1' }}</div>
+              <div class="avg-label">Avg Sleep / Night (hrs)</div>
+            </div>
+            <div class="avg-card avg-green">
+              <div class="avg-icon">🏃</div>
+              <div class="avg-value">{{ weeklyReport()?.averages?.activityCount | number:'1.0-0' }}</div>
+              <div class="avg-label">Avg Activities / Day</div>
+            </div>
+            <div class="avg-card avg-orange">
+              <div class="avg-icon">🎯</div>
+              <div class="avg-value">{{ weeklyReport()?.averages?.goalsCompletionRate | number:'1.0-0' }}%</div>
+              <div class="avg-label">Goals Completion Rate</div>
+            </div>
+          </div>
+
+          @if (weeklyReport()?.days?.length) {
+            <div class="card card-body">
+              <h3 class="section-title" style="margin-bottom:16px">Daily Breakdown</h3>
+              <div class="day-table-wrapper">
+                <table class="day-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Water (ml)</th>
+                      <th>Sleep (hrs)</th>
+                      <th>Activities</th>
+                      <th>Goals Done</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (day of weeklyReport()?.days; track day.date) {
+                      <tr>
+                        <td>{{ day.date | date:'EEE, MMM d' }}</td>
+                        <td>
+                          <span class="table-badge" [class.badge-success]="day.water >= 2000" [class.badge-warning]="day.water > 0 && day.water < 2000" [class.badge-muted]="day.water === 0">
+                            {{ day.water || '—' }}
+                          </span>
+                        </td>
+                        <td>{{ (day.sleep | number:'1.1-1') || '—' }}</td>
+                        <td>{{ day.activityCount }}</td>
+                        <td>{{ day.goalsCompleted }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="empty-state">
+            <div class="empty-icon">📊</div>
+            <div class="empty-title">No weekly data</div>
+            <p class="empty-description">Start logging your health data to generate a weekly report.</p>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- MONTHLY TAB -->
+    @if (activeTab() === 'monthly') {
+      <div class="reports-content animate-fade-in">
+        @if (monthlyReport()) {
+          <div class="health-score-section">
+            <div class="health-score-card">
+              <div class="health-score-circle" [style.--score-color]="getScoreColor(monthlyReport()!.healthScore)">
+                <svg viewBox="0 0 100 100" class="score-ring">
+                  <circle cx="50" cy="50" r="45" fill="none" stroke="var(--color-border-light)" stroke-width="8"/>
+                  <circle cx="50" cy="50" r="45" fill="none" [style.stroke]="getScoreColor(monthlyReport()!.healthScore)"
+                    stroke-width="8" stroke-linecap="round"
+                    [style.stroke-dasharray]="'283'"
+                    [style.stroke-dashoffset]="283 - (283 * monthlyReport()!.healthScore / 100)"
+                    style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 1s ease"/>
+                </svg>
+                <div class="score-value">{{ monthlyReport()?.healthScore }}</div>
+                <div class="score-label">Health Score</div>
+              </div>
+              <div class="score-info">
+                <div class="score-grade" [style.color]="getScoreColor(monthlyReport()!.healthScore)">
+                  {{ getScoreLabel(monthlyReport()!.healthScore) }}
+                </div>
+                <p class="score-desc">Based on your water, sleep, activity, and goal completion this month.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="report-averages-grid">
+            <div class="avg-card avg-blue">
+              <div class="avg-icon">💧</div>
+              <div class="avg-value">{{ monthlyReport()?.totals?.totalWater | number:'1.0-0' }}</div>
+              <div class="avg-label">Total Water (ml)</div>
+            </div>
+            <div class="avg-card avg-purple">
+              <div class="avg-icon">😴</div>
+              <div class="avg-value">{{ monthlyReport()?.totals?.avgSleep | number:'1.1-1' }}</div>
+              <div class="avg-label">Avg Sleep (hrs/night)</div>
+            </div>
+            <div class="avg-card avg-green">
+              <div class="avg-icon">🏃</div>
+              <div class="avg-value">{{ monthlyReport()?.totals?.totalActivities }}</div>
+              <div class="avg-label">Total Activities</div>
+            </div>
+            <div class="avg-card avg-orange">
+              <div class="avg-icon">⚖️</div>
+              <div class="avg-value">
+                {{ monthlyReport()?.totals?.weightChange !== null ? ((monthlyReport()!.totals.weightChange! > 0 ? '+' : '') + (monthlyReport()?.totals?.weightChange | number:'1.1-1') + 'kg') : '—' }}
+              </div>
+              <div class="avg-label">Weight Change</div>
+            </div>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <div class="empty-icon">📅</div>
+            <div class="empty-title">No monthly data</div>
+            <p class="empty-description">Keep tracking for at least a month to see your monthly report.</p>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- PROGRESS TAB -->
+    @if (activeTab() === 'progress') {
+      <div class="reports-content animate-fade-in">
+        @if (progressReport()) {
+          @if (progressReport()!.goalProgress?.length) {
+            <div class="card card-body">
+              <h3 class="section-title" style="margin-bottom:20px">Goal Progress</h3>
+              <div class="goal-progress-list">
+                @for (goal of progressReport()!.goalProgress; track goal.type) {
+                  <div class="goal-progress-item">
+                    <div class="goal-progress-header">
+                      <span class="goal-progress-name">{{ goal.type }}</span>
+                      <span class="goal-progress-value">{{ goal.current }} / {{ goal.target }}</span>
+                    </div>
+                    <div class="progress">
+                      <div class="progress-bar" [style.width.%]="(goal.current / goal.target) * 100"></div>
+                    </div>
+                    <span class="goal-progress-pct">{{ ((goal.current / goal.target) * 100) | number:'1.0-0' }}%</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <div class="trend-cards">
+            <div class="trend-card">
+              <div class="trend-header">
+                <span class="trend-label">Weight Entries</span>
+                <span class="trend-count badge badge-primary">{{ progressReport()!.weights?.length }}</span>
+              </div>
+              @if (progressReport()!.weights?.length) {
+                <div class="trend-sparkline">
+                  @for (w of progressReport()!.weights?.slice(-10); track $index) {
+                    <div class="spark-bar" [style.height.%]="50" title="{{ w.weight }}kg"></div>
+                  }
+                </div>
+              }
+            </div>
+            <div class="trend-card">
+              <div class="trend-header">
+                <span class="trend-label">Sleep Records</span>
+                <span class="trend-count badge badge-primary">{{ progressReport()!.sleepTrend?.length }}</span>
+              </div>
+            </div>
+            <div class="trend-card">
+              <div class="trend-header">
+                <span class="trend-label">Water Logs</span>
+                <span class="trend-count badge badge-primary">{{ progressReport()!.waterTrend?.length }}</span>
+              </div>
+            </div>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <div class="empty-icon">📈</div>
+            <div class="empty-title">No progress data yet</div>
+            <p class="empty-description">Start logging consistently to track your progress over time.</p>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

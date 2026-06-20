@@ -1,75 +1,315 @@
-<div class="dashboard-container">
-  <header class="dashboard-header">
-    <div class="welcome">
-      <h1>Hello, {{ authService.currentUser()?.name || 'User' }}! 👋</h1>
-      <p class="subtitle">Here is an overview of your health modules.</p>
+<div class="page-container dashboard-page">
+  <!-- Page Header -->
+  <div class="dashboard-header">
+    <div>
+      <h1 class="page-title">
+        Good {{ getGreeting() }}, {{ authService.currentUser()?.name?.split(' ')[0] || 'User' }}! 👋
+      </h1>
+      <p class="page-subtitle">{{ today | date:'EEEE, MMMM d, yyyy' }} · Here's your health overview</p>
     </div>
-  </header>
-
-  <div class="modules-grid">
-    <!-- Weight Tracking Module (ACTIVE) -->
-    <div class="module-card active">
-      <div class="module-icon font-gradient">⚖️</div>
-      <div class="module-info">
-        <h3>Weight Tracking</h3>
-        <p>Monitor your weight records, see history logs, and visualize progress trends.</p>
-        <div class="badge success-badge">Active</div>
-      </div>
-      <div class="module-footer">
-        <a routerLink="/weight" class="btn btn-primary btn-sm">Open Module</a>
-      </div>
-    </div>
-
-    <!-- Water Tracking Module (ACTIVE) -->
-    <div class="module-card active">
-      <div class="module-icon font-gradient">💧</div>
-      <div class="module-info">
-        <h3>Water Tracking</h3>
-        <p>Log your daily water intake and ensure you hit your hydration goals.</p>
-        <div class="badge success-badge">Active</div>
-      </div>
-      <div class="module-footer">
-        <a routerLink="/water" class="btn btn-primary btn-sm">Open Module</a>
-      </div>
-    </div>
-
-    <!-- Sleep Tracking Module (ACTIVE) -->
-    <div class="module-card active">
-      <div class="module-icon font-gradient">🌙</div>
-      <div class="module-info">
-        <h3>Sleep Tracking</h3>
-        <p>Log your sleep intervals, analyze duration, and monitor quality scores.</p>
-        <div class="badge success-badge">Active</div>
-      </div>
-      <div class="module-footer">
-        <a routerLink="/sleep" class="btn btn-primary btn-sm">Open Module</a>
-      </div>
-    </div>
-
-    <!-- Activity Tracking Module (ACTIVE) -->
-    <div class="module-card active">
-      <div class="module-icon font-gradient">🏃‍♂️</div>
-      <div class="module-info">
-        <h3>Activity Logs</h3>
-        <p>Track your physical workouts, active duration, and calories burned.</p>
-        <div class="badge success-badge">Active</div>
-      </div>
-      <div class="module-footer">
-        <a routerLink="/activity" class="btn btn-primary btn-sm">Open Module</a>
-      </div>
-    </div>
-
-    <!-- Goals Module (ACTIVE) -->
-    <div class="module-card active">
-      <div class="module-icon font-gradient">🎯</div>
-      <div class="module-info">
-        <h3>Goal Setter</h3>
-        <p>Establish active targets for weight, sleep, hydration, and exercise.</p>
-        <div class="badge success-badge">Active</div>
-      </div>
-      <div class="module-footer">
-        <a routerLink="/goals" class="btn btn-primary btn-sm">Open Module</a>
-      </div>
+    <div class="header-actions">
+      <a routerLink="/reports" class="btn btn-secondary btn-sm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+        View Reports
+      </a>
+      <a routerLink="/ai-insights" class="btn btn-primary btn-sm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        AI Insights
+      </a>
     </div>
   </div>
+
+  @if (isLoading()) {
+    <!-- Skeleton Loading -->
+    <div class="stats-grid">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="stat-card-skeleton skeleton" style="height:120px"></div>
+      }
+    </div>
+  } @else {
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <!-- Weight -->
+      <div class="stat-card stat-card-blue">
+        <div class="stat-card-header">
+          <div class="stat-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7z"/>
+            </svg>
+          </div>
+          <span class="stat-card-label">Current Weight</span>
+        </div>
+        <div class="stat-card-value">
+          {{ weights().length > 0 ? (weights()[0].weight | number:'1.1-1') : '—' }}
+          <span class="stat-card-unit">kg</span>
+        </div>
+        <a routerLink="/weight" class="stat-card-link">Track weight →</a>
+      </div>
+
+      <!-- Water -->
+      <div class="stat-card stat-card-cyan">
+        <div class="stat-card-header">
+          <div class="stat-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/>
+            </svg>
+          </div>
+          <span class="stat-card-label">Water Today</span>
+        </div>
+        <div class="stat-card-value">
+          {{ (summary()?.waterToday ?? 0) | number:'1.0-0' }}
+          <span class="stat-card-unit">ml</span>
+        </div>
+        <div class="stat-card-progress">
+          <div class="progress">
+            <div class="progress-bar" [style.width.%]="waterPercent()"></div>
+          </div>
+          <span class="stat-card-progress-label">{{ waterPercent() }}% of goal</span>
+        </div>
+      </div>
+
+      <!-- Sleep -->
+      <div class="stat-card stat-card-purple">
+        <div class="stat-card-header">
+          <div class="stat-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </div>
+          <span class="stat-card-label">Last Sleep</span>
+        </div>
+        <div class="stat-card-value">
+          {{ sleepLogs().length > 0 ? (+sleepLogs()[0].totalHours | number:'1.1-1') : '—' }}
+          <span class="stat-card-unit">hrs</span>
+        </div>
+        <a routerLink="/sleep" class="stat-card-link">View sleep →</a>
+      </div>
+
+      <!-- Activity -->
+      <div class="stat-card stat-card-green">
+        <div class="stat-card-header">
+          <div class="stat-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <span class="stat-card-label">Activities</span>
+        </div>
+        <div class="stat-card-value">
+          {{ activityLogs().length }}
+          <span class="stat-card-unit">total</span>
+        </div>
+        <a routerLink="/activity" class="stat-card-link">Log activity →</a>
+      </div>
+
+      <!-- Calories -->
+      <div class="stat-card stat-card-orange">
+        <div class="stat-card-header">
+          <div class="stat-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+          </div>
+          <span class="stat-card-label">Total Calories</span>
+        </div>
+        <div class="stat-card-value">
+          {{ getTotalCalories() }}
+          <span class="stat-card-unit">kcal</span>
+        </div>
+        <a routerLink="/activity" class="stat-card-link">See activities →</a>
+      </div>
+
+      <!-- BMI -->
+      <div class="stat-card stat-card-rose">
+        <div class="stat-card-header">
+          <div class="stat-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+            </svg>
+          </div>
+          <span class="stat-card-label">BMI</span>
+        </div>
+        @if (bmi()) {
+          <div class="stat-card-value">
+            {{ bmi() | number:'1.1-1' }}
+          </div>
+          <span class="badge" [style.background]="bmiCategory()?.color + '22'" [style.color]="bmiCategory()?.color">
+            {{ bmiCategory()?.label }}
+          </span>
+        } @else {
+          <div class="stat-card-value">—</div>
+          <span class="stat-card-link">Set height in profile</span>
+        }
+      </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="charts-grid">
+      <!-- Weight Chart -->
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <h3 class="chart-title">Weight Trend</h3>
+            <p class="chart-subtitle">Last 14 entries</p>
+          </div>
+          <a routerLink="/weight" class="btn btn-ghost btn-sm">View all</a>
+        </div>
+        <div class="chart-wrapper">
+          @if (weights().length >= 2) {
+            <canvas #weightChartCanvas></canvas>
+          } @else {
+            <div class="empty-state" style="padding:40px 20px">
+              <div class="empty-icon" style="font-size:40px">⚖️</div>
+              <p class="empty-description">Log at least 2 weight entries to see the trend</p>
+              <a routerLink="/weight" class="btn btn-primary btn-sm" style="margin-top:12px">Log weight</a>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Water Chart -->
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <h3 class="chart-title">Water Intake</h3>
+            <p class="chart-subtitle">Last 7 days</p>
+          </div>
+          <a routerLink="/water" class="btn btn-ghost btn-sm">View all</a>
+        </div>
+        <div class="chart-wrapper">
+          <canvas #waterChartCanvas></canvas>
+        </div>
+      </div>
+
+      <!-- Sleep Chart -->
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <h3 class="chart-title">Sleep Duration</h3>
+            <p class="chart-subtitle">Last 7 nights</p>
+          </div>
+          <a routerLink="/sleep" class="btn btn-ghost btn-sm">View all</a>
+        </div>
+        <div class="chart-wrapper">
+          @if (sleepLogs().length > 0) {
+            <canvas #sleepChartCanvas></canvas>
+          } @else {
+            <div class="empty-state" style="padding:40px 20px">
+              <div class="empty-icon" style="font-size:40px">🌙</div>
+              <p class="empty-description">No sleep data yet. Start tracking tonight!</p>
+              <a routerLink="/sleep" class="btn btn-primary btn-sm" style="margin-top:12px">Log sleep</a>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Activity Chart -->
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <h3 class="chart-title">Calories by Activity</h3>
+            <p class="chart-subtitle">All time breakdown</p>
+          </div>
+          <a routerLink="/activity" class="btn btn-ghost btn-sm">View all</a>
+        </div>
+        <div class="chart-wrapper">
+          @if (activityLogs().length > 0) {
+            <canvas #activityChartCanvas></canvas>
+          } @else {
+            <div class="empty-state" style="padding:40px 20px">
+              <div class="empty-icon" style="font-size:40px">🏃</div>
+              <p class="empty-description">No activities logged yet. Get moving!</p>
+              <a routerLink="/activity" class="btn btn-primary btn-sm" style="margin-top:12px">Log activity</a>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Row -->
+    <div class="bottom-grid">
+      <!-- Goals Progress -->
+      <div class="card card-body">
+        <div class="section-header">
+          <h3 class="section-title">Active Goals</h3>
+          <a routerLink="/goals" class="btn btn-ghost btn-sm">All goals →</a>
+        </div>
+        @if (activeGoals().length > 0) {
+          <div class="goals-list">
+            @for (goal of activeGoals(); track goal.id) {
+              <div class="goal-item">
+                <div class="goal-info">
+                  <span class="goal-type-label">{{ formatGoalType(goal.goal_type) }}</span>
+                  <span class="goal-values">{{ goal.current_value }} / {{ goal.target_value }}</span>
+                </div>
+                <div class="progress" style="height:6px">
+                  <div class="progress-bar" [style.width.%]="getGoalProgress(goal)"></div>
+                </div>
+                <span class="goal-percent">{{ getGoalProgress(goal) }}%</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state" style="padding:24px">
+            <p class="empty-description">No active goals. Set your first goal!</p>
+            <a routerLink="/goals" class="btn btn-primary btn-sm" style="margin-top:12px">Set goals</a>
+          </div>
+        }
+      </div>
+
+      <!-- Recent Activities -->
+      <div class="card card-body">
+        <div class="section-header">
+          <h3 class="section-title">Recent Activities</h3>
+          <a routerLink="/activity" class="btn btn-ghost btn-sm">All activities →</a>
+        </div>
+        @if (recentActivities().length > 0) {
+          <div class="activities-list">
+            @for (activity of recentActivities(); track activity.id) {
+              <div class="activity-item">
+                <div class="activity-icon">{{ getActivityIcon(activity.activity_type) }}</div>
+                <div class="activity-info">
+                  <span class="activity-name">{{ activity.activity_type }}</span>
+                  <span class="activity-meta">{{ activity.duration }} min · {{ activity.calories_burned }} kcal</span>
+                </div>
+                <span class="activity-date">{{ activity.activity_date | date:'d MMM' }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state" style="padding:24px">
+            <p class="empty-description">No activities yet. Start tracking!</p>
+            <a routerLink="/activity" class="btn btn-primary btn-sm" style="margin-top:12px">Log activity</a>
+          </div>
+        }
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card card-body">
+        <h3 class="section-title" style="margin-bottom:16px">Quick Log</h3>
+        <div class="quick-actions">
+          <a routerLink="/weight" class="quick-action-btn">
+            <span class="quick-icon">⚖️</span>
+            <span>Weight</span>
+          </a>
+          <a routerLink="/water" class="quick-action-btn">
+            <span class="quick-icon">💧</span>
+            <span>Water</span>
+          </a>
+          <a routerLink="/sleep" class="quick-action-btn">
+            <span class="quick-icon">🌙</span>
+            <span>Sleep</span>
+          </a>
+          <a routerLink="/activity" class="quick-action-btn">
+            <span class="quick-icon">🏃</span>
+            <span>Activity</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  }
 </div>

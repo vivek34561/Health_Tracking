@@ -24,6 +24,7 @@ export class RegisterComponent {
   readonly isLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
+  showPassword = false;
 
   onSubmit(): void {
     if (this.registerForm.invalid) {
@@ -40,7 +41,7 @@ export class RegisterComponent {
     this.authService.register(name!, email!, password!).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.successMessage.set('Registration successful! Redirecting to login...');
+        this.successMessage.set('Account created! Redirecting to login...');
         setTimeout(() => {
           this.router.navigate(['/login']);
         }, 2000);

@@ -1,0 +1,105 @@
+<div class="page-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Notifications</h1>
+      <p class="page-subtitle">
+        @if (notificationService.getUnreadCount() > 0) {
+          {{ notificationService.getUnreadCount() }} unread notification{{ notificationService.getUnreadCount() !== 1 ? 's' : '' }}
+        } @else {
+          All caught up!
+        }
+      </p>
+    </div>
+    <div class="header-actions">
+      @if (notificationService.getUnreadCount() > 0) {
+        <button class="btn btn-secondary btn-sm" (click)="markAllRead()" id="mark-all-read-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+          Mark All Read
+        </button>
+      }
+      @if (notificationService.notifications().length > 0) {
+        <button class="btn btn-ghost btn-sm" (click)="clearAll()" id="clear-all-btn">Clear All</button>
+      }
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="notif-tab-bar">
+    @for (tab of tabs; track tab.id) {
+      <button
+        class="notif-tab-btn"
+        [class.active]="activeTab() === tab.id"
+        (click)="setTab(tab.id)"
+        [id]="'notif-tab-' + tab.id">
+        <span>{{ tab.icon }}</span>
+        <span>{{ tab.label }}</span>
+        @if (tab.id === 'all' && notificationService.getUnreadCount() > 0) {
+          <span class="tab-count">{{ notificationService.getUnreadCount() }}</span>
+        }
+      </button>
+    }
+  </div>
+
+  <!-- Notifications List -->
+  @if (filteredNotifications().length === 0) {
+    <div class="empty-state animate-fade-in">
+      <div class="empty-icon">🔔</div>
+      <div class="empty-title">No notifications here</div>
+      <p class="empty-description">
+        @if (activeTab() === 'all') {
+          You're all caught up! Notifications will appear here when you have updates.
+        } @else {
+          No {{ activeTab() }} notifications at this time.
+        }
+      </p>
+    </div>
+  } @else {
+    <div class="notif-list animate-fade-in">
+      @for (notif of filteredNotifications(); track notif.id) {
+        <div
+          class="notif-item"
+          [class.unread]="!notif.read"
+          (click)="markRead(notif)"
+          role="button"
+          tabindex="0"
+          [attr.id]="'notif-' + notif.id">
+          <!-- Left: icon -->
+          <div class="notif-icon-wrap" [style.background]="getTypeColor(notif.type) + '22'">
+            <span class="notif-emoji">{{ notif.icon || '🔔' }}</span>
+          </div>
+
+          <!-- Middle: content -->
+          <div class="notif-content">
+            <div class="notif-header-row">
+              <span class="notif-title">{{ notif.title }}</span>
+              <div class="notif-meta">
+                <span class="notif-type-badge" [style.background]="getTypeColor(notif.type) + '22'" [style.color]="getTypeColor(notif.type)">
+                  {{ getTypeLabel(notif.type) }}
+                </span>
+                @if (!notif.read) {
+                  <span class="unread-dot"></span>
+                }
+              </div>
+            </div>
+            <p class="notif-message">{{ notif.message }}</p>
+            <span class="notif-time">{{ getRelativeTime(notif.createdAt) }}</span>
+          </div>
+
+          <!-- Right: delete -->
+          <button
+            class="notif-delete-btn"
+            (click)="deleteNotification(notif.id, $event)"
+            title="Delete notification"
+            [attr.id]="'delete-notif-' + notif.id">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>
