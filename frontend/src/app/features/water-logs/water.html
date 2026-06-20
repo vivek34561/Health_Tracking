@@ -1,0 +1,208 @@
+<div class="water-container animate-fade-in">
+  <header class="water-header">
+    <h1>Water Tracking 💧</h1>
+    <p class="subtitle">Log your daily fluid consumption and monitor your hydration progress</p>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger animate-fade-in">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- Statistics Row -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <span class="stat-label">Today's Intake</span>
+      <h2 class="stat-value">{{ stats().todayTotal }} <span class="unit">ml</span></h2>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Hydration Target</span>
+      <h2 class="stat-value">{{ stats().target }} <span class="unit">ml</span></h2>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Progress</span>
+      <h2 class="stat-value">{{ stats().progressPercent }}%</h2>
+    </div>
+  </div>
+
+  <!-- Quick Add Row -->
+  <div class="quick-add-card glass-card">
+    <h3>⚡ Quick Hydrate</h3>
+    <div class="quick-add-buttons">
+      <button (click)="quickAdd(250)" class="btn btn-water" [disabled]="isSubmitting()">
+        <span class="btn-icon">🥛</span> +250 ml
+      </button>
+      <button (click)="quickAdd(500)" class="btn btn-water" [disabled]="isSubmitting()">
+        <span class="btn-icon">🥤</span> +500 ml
+      </button>
+      <button (click)="quickAdd(750)" class="btn btn-water" [disabled]="isSubmitting()">
+        <span class="btn-icon">🍼</span> +750 ml
+      </button>
+      <button (click)="quickAdd(1000)" class="btn btn-water" [disabled]="isSubmitting()">
+        <span class="btn-icon">🏺</span> +1 L
+      </button>
+    </div>
+  </div>
+
+  <!-- Content Split Layout -->
+  <div class="content-layout">
+    
+    <!-- Left column: Visual bottle filler -->
+    <div class="left-col">
+      <div class="glass-card bottle-card">
+        <h3>Daily Hydration Status</h3>
+        <div class="bottle-visual-wrapper">
+          <!-- Premium SVG Water Bottle Outline with Dynamic Fill -->
+          <svg viewBox="0 0 200 400" class="bottle-svg">
+            <defs>
+              <linearGradient id="waterGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#00d2ff" />
+                <stop offset="100%" stop-color="#0066eb" />
+              </linearGradient>
+              <clipPath id="bottleClip">
+                <!-- Inner bottle shape path -->
+                <path d="M 85,30 
+                         C 85,25 115,25 115,30 
+                         L 115,60 
+                         C 115,80 150,90 150,110 
+                         L 150,350 
+                         C 150,380 50,380 50,350 
+                         L 50,110 
+                         C 50,90 85,80 85,60 
+                         Z" />
+              </clipPath>
+            </defs>
+
+            <!-- Bottle Shadow & Background -->
+            <path d="M 85,30 
+                     C 85,25 115,25 115,30 
+                     L 115,60 
+                     C 115,80 150,90 150,110 
+                     L 150,350 
+                     C 150,380 50,380 50,350 
+                     L 50,110 
+                     C 50,90 85,80 85,60 
+                     Z" 
+                  fill="#1a2536" stroke="#2c3e50" stroke-width="6" />
+
+            <!-- Dynamic Water Fill (Clipped by the Inner Bottle shape) -->
+            <g clip-path="url(#bottleClip)">
+              <!-- Move the blue rectangle vertically based on progress percent -->
+              <!-- y starts at 380 (0% full) and goes up to 30 (100% full). Height is 350. -->
+              <rect x="30" [attr.y]="380 - (stats().progressPercent * 3.5)" width="140" height="350" fill="url(#waterGradient)" class="water-rect" />
+              <!-- Subtle wave animation helper -->
+              <path [attr.d]="'M 30 ' + (380 - (stats().progressPercent * 3.5)) + ' Q 65 ' + (375 - (stats().progressPercent * 3.5)) + ' 100 ' + (380 - (stats().progressPercent * 3.5)) + ' T 170 ' + (380 - (stats().progressPercent * 3.5)) + ' L 170 380 L 30 380 Z'" fill="#00e5ff" opacity="0.3" />
+            </g>
+
+            <!-- Inner Bottle highlights / glass details -->
+            <path d="M 60,120 L 60,340" stroke="#ffffff" stroke-width="3" opacity="0.15" stroke-linecap="round" />
+            <path d="M 140,120 L 140,340" stroke="#ffffff" stroke-width="1.5" opacity="0.1" stroke-linecap="round" />
+            <text x="100" y="220" text-anchor="middle" class="bottle-text-percent">
+              {{ stats().progressPercent }}%
+            </text>
+            <text x="100" y="250" text-anchor="middle" class="bottle-text-amount">
+              {{ stats().todayTotal }} / {{ stats().target }} ml
+            </text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Logs History List -->
+      <div class="glass-card list-card">
+        <h3>Today's Consumption Log</h3>
+        
+        @if (isLoading()) {
+          <div class="loading-state">
+            <span class="spinner"></span> Loading water intake...
+          </div>
+        } @else if (logs().length === 0) {
+          <div class="empty-state">
+            <p>No fluid intake recorded. Drink some water and record it above!</p>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Intake (ml)</th>
+                  <th>Time Logged</th>
+                  <th class="actions-col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (log of logs(); track log.id) {
+                  <tr>
+                    <td class="amount-cell">{{ log.amountMl }} ml</td>
+                    <td class="date-cell">{{ log.consumedAt | date: 'dd MMM yyyy, HH:mm' }}</td>
+                    <td class="actions-cell">
+                      <button (click)="deleteRecord(log.id)" class="btn-action delete" title="Delete Entry">🗑️</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+
+    </div>
+
+    <!-- Right column: Log Custom Intake -->
+    <div class="right-col">
+      <div class="glass-card form-card">
+        <h3>Log Custom Amount</h3>
+        
+        <form [formGroup]="waterForm" (ngSubmit)="onSubmit()" class="metric-form">
+          <div class="form-group">
+            <label for="amount">Water Volume (ml)</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🥛</span>
+              <input
+                id="amount"
+                type="number"
+                step="50"
+                formControlName="amount"
+                placeholder="e.g. 350"
+                [class.error]="waterForm.get('amount')?.touched && waterForm.get('amount')?.invalid"
+              />
+            </div>
+            @if (waterForm.get('amount')?.touched && waterForm.get('amount')?.errors?.['required']) {
+              <span class="error-text">Water volume is required</span>
+            }
+            @if (waterForm.get('amount')?.touched && (waterForm.get('amount')?.errors?.['min'] || waterForm.get('amount')?.errors?.['max'])) {
+              <span class="error-text">Enter a volume between 10 ml and 5000 ml</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="consumedAt">Date & Time</label>
+            <div class="input-wrapper">
+              <span class="input-icon">📅</span>
+              <input
+                id="consumedAt"
+                type="datetime-local"
+                formControlName="consumedAt"
+                [class.error]="waterForm.get('consumedAt')?.touched && waterForm.get('consumedAt')?.invalid"
+              />
+            </div>
+            @if (waterForm.get('consumedAt')?.touched && waterForm.get('consumedAt')?.errors?.['required']) {
+              <span class="error-text">Date and time are required</span>
+            }
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+              @if (isSubmitting()) {
+                <span class="spinner"></span> Saving...
+              } @else {
+                Log Intake
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,97 @@
+<div class="auth-container">
+  <div class="glass-card">
+    <div class="auth-header">
+      <div class="brand">
+        <span class="logo-icon">⚡</span>
+        <h1>HealthAI</h1>
+      </div>
+      <p class="subtitle">Create an account to start tracking your health journey</p>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="alert alert-danger animate-fade-in">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    @if (successMessage()) {
+      <div class="alert alert-success animate-fade-in">
+        {{ successMessage() }}
+      </div>
+    }
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <div class="input-wrapper">
+          <span class="input-icon">👤</span>
+          <input
+            id="name"
+            type="text"
+            formControlName="name"
+            placeholder="Vivek Gupta"
+            [class.error]="registerForm.get('name')?.touched && registerForm.get('name')?.invalid"
+          />
+        </div>
+        @if (registerForm.get('name')?.touched && registerForm.get('name')?.errors?.['required']) {
+          <span class="error-text">Name is required</span>
+        }
+        @if (registerForm.get('name')?.touched && registerForm.get('name')?.errors?.['minlength']) {
+          <span class="error-text">Name must be at least 2 characters</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <div class="input-wrapper">
+          <span class="input-icon">✉</span>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="name@example.com"
+            [class.error]="registerForm.get('email')?.touched && registerForm.get('email')?.invalid"
+          />
+        </div>
+        @if (registerForm.get('email')?.touched && registerForm.get('email')?.errors?.['required']) {
+          <span class="error-text">Email is required</span>
+        }
+        @if (registerForm.get('email')?.touched && registerForm.get('email')?.errors?.['email']) {
+          <span class="error-text">Please enter a valid email</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-wrapper">
+          <span class="input-icon">🔒</span>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            placeholder="••••••••"
+            [class.error]="registerForm.get('password')?.touched && registerForm.get('password')?.invalid"
+          />
+        </div>
+        @if (registerForm.get('password')?.touched && registerForm.get('password')?.errors?.['required']) {
+          <span class="error-text">Password is required</span>
+        }
+        @if (registerForm.get('password')?.touched && registerForm.get('password')?.errors?.['minlength']) {
+          <span class="error-text">Password must be at least 6 characters</span>
+        }
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="isLoading() || successMessage()">
+        @if (isLoading()) {
+          <span class="spinner"></span> Creating account...
+        } @else {
+          Create Account
+        }
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Already have an account? <a routerLink="/login" class="link">Sign in</a></p>
+    </div>
+  </div>
+</div>

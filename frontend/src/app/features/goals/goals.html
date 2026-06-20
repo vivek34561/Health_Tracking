@@ -1,0 +1,221 @@
+<div class="goals-container animate-fade-in">
+  <header class="goals-header">
+    <h1>Goal Setter 🎯</h1>
+    <p class="subtitle">Set targets for weight, sleep, hydration, or activity, and track your achievements</p>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger animate-fade-in">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- Statistics Row -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <span class="stat-label">Active Targets</span>
+      <h2 class="stat-value active-color">{{ stats().active }}</h2>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Completed Goals</span>
+      <h2 class="stat-value completed-color">{{ stats().completed }}</h2>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Failed / Expired</span>
+      <h2 class="stat-value failed-color">{{ stats().failed }}</h2>
+    </div>
+  </div>
+
+  <!-- Content Split Layout -->
+  <div class="content-layout">
+    
+    <!-- Left column: Visual Goals List -->
+    <div class="left-col">
+      <div class="glass-card list-card">
+        <h3>My Goals</h3>
+        
+        @if (isLoading()) {
+          <div class="loading-state">
+            <span class="spinner"></span> Loading goals...
+          </div>
+        } @else if (goals().length === 0) {
+          <div class="empty-state">
+            <p>No goals set yet. Build your health roadmap by creating a goal on the right!</p>
+          </div>
+        } @else {
+          <div class="goals-grid">
+            @for (goal of goals(); track goal.id) {
+              <!-- Goal Card -->
+              <div class="goal-card" [attr.data-status]="goal.status">
+                <div class="goal-card-header">
+                  <div class="goal-type-badge" [attr.data-type]="goal.goal_type.toUpperCase()">
+                    @if (goal.goal_type.toUpperCase() === 'WATER') { 💧 }
+                    @else if (goal.goal_type.toUpperCase() === 'WEIGHT') { ⚖️ }
+                    @else if (goal.goal_type.toUpperCase() === 'SLEEP') { 🌙 }
+                    @else if (goal.goal_type.toUpperCase() === 'ACTIVITY') { 🏃‍♂️ }
+                    @else { 🎯 }
+                    {{ goal.goal_type }} Target
+                  </div>
+                  <div class="goal-status-badge" [attr.data-status]="goal.status">
+                    {{ goal.status }}
+                  </div>
+                </div>
+
+                <div class="goal-card-body">
+                  <div class="goal-progress-numbers">
+                    <span class="current">{{ goal.current_value | number: '1.0-2' }}</span>
+                    <span class="separator">/</span>
+                    <span class="target">{{ goal.target_value | number: '1.0-2' }}</span>
+                  </div>
+
+                  <!-- Progress Bar -->
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" [style.width.%]="Math.min(100, (goal.current_value / goal.target_value) * 100)"></div>
+                  </div>
+
+                  <div class="goal-dates">
+                    <span>📅 {{ goal.start_date | date: 'dd MMM' }} - {{ goal.end_date | date: 'dd MMM yyyy' }}</span>
+                  </div>
+                </div>
+
+                <!-- Goal Card Actions -->
+                <div class="goal-card-actions">
+                  @if (goal.status === 'ACTIVE') {
+                    <div class="increment-actions">
+                      <button (click)="incrementProgress(goal, goal.target_value * 0.1)" class="btn-increment" title="Add 10% progress">+10%</button>
+                      <button (click)="incrementProgress(goal, goal.target_value * 0.25)" class="btn-increment" title="Add 25% progress">+25%</button>
+                      <button (click)="completeGoal(goal.id)" class="btn-action-done" title="Complete Goal">✔️</button>
+                    </div>
+                  }
+                  <div class="edit-delete-actions">
+                    <button (click)="startEdit(goal)" class="btn-card-action" title="Edit Goal">✏️</button>
+                    <button (click)="deleteRecord(goal.id)" class="btn-card-action delete" title="Delete Goal">🗑️</button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Right column: Add / Edit Goal Form -->
+    <div class="right-col">
+      <div class="glass-card form-card">
+        <h3>{{ editingRecordId() !== null ? 'Edit Goal' : 'Create New Goal' }}</h3>
+        
+        <form [formGroup]="goalForm" (ngSubmit)="onSubmit()" class="metric-form">
+          <div class="form-group">
+            <label for="goalType">Goal Type</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🎯</span>
+              <select id="goalType" formControlName="goalType" class="select-input">
+                <option value="Weight">Weight Tracking (kg)</option>
+                <option value="Water">Water Intake (ml)</option>
+                <option value="Sleep">Sleep Duration (hrs)</option>
+                <option value="Activity">Active Duration (mins)</option>
+                <option value="Steps">Daily Steps</option>
+              </select>
+            </div>
+            @if (goalForm.get('goalType')?.touched && goalForm.get('goalType')?.errors?.['required']) {
+              <span class="error-text">Goal type is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="targetValue">Target Value</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🏁</span>
+              <input
+                id="targetValue"
+                type="number"
+                step="0.1"
+                formControlName="targetValue"
+                placeholder="e.g. 3000 (ml) or 75 (kg)"
+                [class.error]="goalForm.get('targetValue')?.touched && goalForm.get('targetValue')?.invalid"
+              />
+            </div>
+            @if (goalForm.get('targetValue')?.touched && goalForm.get('targetValue')?.errors?.['required']) {
+              <span class="error-text">Target value is required</span>
+            }
+            @if (goalForm.get('targetValue')?.touched && goalForm.get('targetValue')?.errors?.['min']) {
+              <span class="error-text">Target must be a positive number</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="currentValue">Current Progress</label>
+            <div class="input-wrapper">
+              <span class="input-icon">📈</span>
+              <input
+                id="currentValue"
+                type="number"
+                step="0.1"
+                formControlName="currentValue"
+                placeholder="e.g. 0"
+                [class.error]="goalForm.get('currentValue')?.touched && goalForm.get('currentValue')?.invalid"
+              />
+            </div>
+            @if (goalForm.get('currentValue')?.touched && goalForm.get('currentValue')?.errors?.['min']) {
+              <span class="error-text">Cannot be negative</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="startDate">Start Date</label>
+            <div class="input-wrapper">
+              <span class="input-icon">📅</span>
+              <input
+                id="startDate"
+                type="date"
+                formControlName="startDate"
+                [class.error]="goalForm.get('startDate')?.touched && goalForm.get('startDate')?.invalid"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="endDate">End Date (Target deadline)</label>
+            <div class="input-wrapper">
+              <span class="input-icon">📅</span>
+              <input
+                id="endDate"
+                type="date"
+                formControlName="endDate"
+                [class.error]="goalForm.get('endDate')?.touched && goalForm.get('endDate')?.invalid"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="status">Status</label>
+            <div class="input-wrapper">
+              <span class="input-icon">💡</span>
+              <select id="status" formControlName="status" class="select-input">
+                <option value="ACTIVE">Active</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="FAILED">Failed</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            @if (editingRecordId() !== null) {
+              <button type="button" (click)="cancelEdit()" class="btn btn-secondary" [disabled]="isSubmitting()">
+                Cancel
+              </button>
+            }
+            <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+              @if (isSubmitting()) {
+                <span class="spinner"></span> Saving...
+              } @else {
+                {{ editingRecordId() !== null ? 'Update Goal' : 'Create Goal' }}
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>

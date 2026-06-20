@@ -1,0 +1,75 @@
+<div class="dashboard-container">
+  <header class="dashboard-header">
+    <div class="welcome">
+      <h1>Hello, {{ authService.currentUser()?.name || 'User' }}! 👋</h1>
+      <p class="subtitle">Here is an overview of your health modules.</p>
+    </div>
+  </header>
+
+  <div class="modules-grid">
+    <!-- Weight Tracking Module (ACTIVE) -->
+    <div class="module-card active">
+      <div class="module-icon font-gradient">⚖️</div>
+      <div class="module-info">
+        <h3>Weight Tracking</h3>
+        <p>Monitor your weight records, see history logs, and visualize progress trends.</p>
+        <div class="badge success-badge">Active</div>
+      </div>
+      <div class="module-footer">
+        <a routerLink="/weight" class="btn btn-primary btn-sm">Open Module</a>
+      </div>
+    </div>
+
+    <!-- Water Tracking Module (ACTIVE) -->
+    <div class="module-card active">
+      <div class="module-icon font-gradient">💧</div>
+      <div class="module-info">
+        <h3>Water Tracking</h3>
+        <p>Log your daily water intake and ensure you hit your hydration goals.</p>
+        <div class="badge success-badge">Active</div>
+      </div>
+      <div class="module-footer">
+        <a routerLink="/water" class="btn btn-primary btn-sm">Open Module</a>
+      </div>
+    </div>
+
+    <!-- Sleep Tracking Module (ACTIVE) -->
+    <div class="module-card active">
+      <div class="module-icon font-gradient">🌙</div>
+      <div class="module-info">
+        <h3>Sleep Tracking</h3>
+        <p>Log your sleep intervals, analyze duration, and monitor quality scores.</p>
+        <div class="badge success-badge">Active</div>
+      </div>
+      <div class="module-footer">
+        <a routerLink="/sleep" class="btn btn-primary btn-sm">Open Module</a>
+      </div>
+    </div>
+
+    <!-- Activity Tracking Module (ACTIVE) -->
+    <div class="module-card active">
+      <div class="module-icon font-gradient">🏃‍♂️</div>
+      <div class="module-info">
+        <h3>Activity Logs</h3>
+        <p>Track your physical workouts, active duration, and calories burned.</p>
+        <div class="badge success-badge">Active</div>
+      </div>
+      <div class="module-footer">
+        <a routerLink="/activity" class="btn btn-primary btn-sm">Open Module</a>
+      </div>
+    </div>
+
+    <!-- Goals Module (ACTIVE) -->
+    <div class="module-card active">
+      <div class="module-icon font-gradient">🎯</div>
+      <div class="module-info">
+        <h3>Goal Setter</h3>
+        <p>Establish active targets for weight, sleep, hydration, and exercise.</p>
+        <div class="badge success-badge">Active</div>
+      </div>
+      <div class="module-footer">
+        <a routerLink="/goals" class="btn btn-primary btn-sm">Open Module</a>
+      </div>
+    </div>
+  </div>
+</div>

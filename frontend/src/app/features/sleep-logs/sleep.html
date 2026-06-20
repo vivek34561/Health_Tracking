@@ -1,0 +1,158 @@
+<div class="sleep-container animate-fade-in">
+  <header class="sleep-header">
+    <h1>Sleep Tracking 🌙</h1>
+    <p class="subtitle">Record your sleep duration and track restful night patterns</p>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger animate-fade-in">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- Statistics Row -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <span class="stat-label">Last Night's Sleep</span>
+      <h2 class="stat-value">{{ stats().lastSleep | number: '1.1-2' }} <span class="unit">hrs</span></h2>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Average Sleep</span>
+      <h2 class="stat-value">{{ stats().avgDuration | number: '1.1-2' }} <span class="unit">hrs</span></h2>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Avg Quality Score</span>
+      <h2 class="stat-value">{{ stats().avgQuality }}/10</h2>
+    </div>
+  </div>
+
+  <!-- Content Split Layout -->
+  <div class="content-layout">
+    
+    <!-- Left column: Sleep Log History -->
+    <div class="left-col">
+      <div class="glass-card list-card">
+        <h3>Sleep History Log</h3>
+        
+        @if (isLoading()) {
+          <div class="loading-state">
+            <span class="spinner"></span> Loading sleep entries...
+          </div>
+        } @else if (logs().length === 0) {
+          <div class="empty-state">
+            <p>No sleep logs recorded. Start logging your sleep sessions on the right!</p>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Duration (hrs)</th>
+                  <th>Quality</th>
+                  <th>Asleep / Awake</th>
+                  <th class="actions-col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (log of logs(); track log.id) {
+                  <tr [class.highlight]="editingRecordId() === log.id">
+                    <td class="hours-cell">{{ log.totalHours | number: '1.1-2' }} hrs</td>
+                    <td class="quality-cell">
+                      <span class="star-rating">⭐ {{ log.qualityScore ? log.qualityScore + '/10' : 'N/A' }}</span>
+                    </td>
+                    <td class="date-cell">
+                      <div class="time-range">
+                        <span class="time-in">🛌 {{ log.sleepStart | date: 'dd MMM, HH:mm' }}</span>
+                        <span class="time-out">⏰ {{ log.sleepEnd | date: 'dd MMM, HH:mm' }}</span>
+                      </div>
+                    </td>
+                    <td class="actions-cell">
+                      <button (click)="startEdit(log)" class="btn-action edit" title="Edit Entry">✏️</button>
+                      <button (click)="deleteRecord(log.id)" class="btn-action delete" title="Delete Entry">🗑️</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Right column: Add / Edit Sleep Log -->
+    <div class="right-col">
+      <div class="glass-card form-card">
+        <h3>{{ editingRecordId() !== null ? 'Edit Sleep Entry' : 'Log Sleep Session' }}</h3>
+        
+        <form [formGroup]="sleepForm" (ngSubmit)="onSubmit()" class="metric-form">
+          <div class="form-group">
+            <label for="sleepStart">Sleep Start (Bedtime)</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🛌</span>
+              <input
+                id="sleepStart"
+                type="datetime-local"
+                formControlName="sleepStart"
+                [class.error]="sleepForm.get('sleepStart')?.touched && sleepForm.get('sleepStart')?.invalid"
+              />
+            </div>
+            @if (sleepForm.get('sleepStart')?.touched && sleepForm.get('sleepStart')?.errors?.['required']) {
+              <span class="error-text">Bedtime start is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="sleepEnd">Sleep End (Wakeup Time)</label>
+            <div class="input-wrapper">
+              <span class="input-icon">⏰</span>
+              <input
+                id="sleepEnd"
+                type="datetime-local"
+                formControlName="sleepEnd"
+                [class.error]="sleepForm.get('sleepEnd')?.touched && sleepForm.get('sleepEnd')?.invalid"
+              />
+            </div>
+            @if (sleepForm.get('sleepEnd')?.touched && sleepForm.get('sleepEnd')?.errors?.['required']) {
+              <span class="error-text">Wakeup time is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="qualityScore">Sleep Quality (1 - 10)</label>
+            <div class="slider-wrapper">
+              <input
+                id="qualityScore"
+                type="range"
+                min="1"
+                max="10"
+                step="1"
+                formControlName="qualityScore"
+                class="quality-slider"
+              />
+              <span class="slider-value">{{ sleepForm.get('qualityScore')?.value }}/10</span>
+            </div>
+            @if (sleepForm.get('qualityScore')?.touched && (sleepForm.get('qualityScore')?.errors?.['min'] || sleepForm.get('qualityScore')?.errors?.['max'])) {
+              <span class="error-text">Enter a valid score between 1 and 10</span>
+            }
+          </div>
+
+          <div class="form-actions">
+            @if (editingRecordId() !== null) {
+              <button type="button" (click)="cancelEdit()" class="btn btn-secondary" [disabled]="isSubmitting()">
+                Cancel
+              </button>
+            }
+            <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+              @if (isSubmitting()) {
+                <span class="spinner"></span> Saving...
+              } @else {
+                {{ editingRecordId() !== null ? 'Update Log' : 'Add Sleep Record' }}
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>

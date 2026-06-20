@@ -1,0 +1,199 @@
+<div class="activity-container animate-fade-in">
+  <header class="activity-header">
+    <h1>Activity Tracking 🏃‍♂️</h1>
+    <p class="subtitle">Track your workouts, active duration, and calories burned daily</p>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger animate-fade-in">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- Statistics Row -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <span class="stat-label">Workouts Count</span>
+      <h2 class="stat-value">{{ stats().count }} <span class="unit">entries</span></h2>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Active Duration</span>
+      <h2 class="stat-value">{{ stats().totalDuration }} <span class="unit">mins</span></h2>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Calories Burned</span>
+      <h2 class="stat-value">{{ stats().totalCalories }} <span class="unit">kcal</span></h2>
+    </div>
+  </div>
+
+  <!-- Content Split Layout -->
+  <div class="content-layout">
+    
+    <!-- Left column: Activity Log History -->
+    <div class="left-col">
+      <div class="glass-card list-card">
+        <h3>Activity History Log</h3>
+        
+        @if (isLoading()) {
+          <div class="loading-state">
+            <span class="spinner"></span> Loading activity logs...
+          </div>
+        } @else if (logs().length === 0) {
+          <div class="empty-state">
+            <p>No activities recorded. Put on your running shoes and log one on the right!</p>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Duration</th>
+                  <th>Calories</th>
+                  <th>Distance</th>
+                  <th>Date</th>
+                  <th class="actions-col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (log of logs(); track log.id) {
+                  <tr [class.highlight]="editingRecordId() === log.id">
+                    <td class="type-cell">
+                      <span class="activity-badge" [attr.data-type]="log.activity_type.toUpperCase()">
+                        {{ log.activity_type }}
+                      </span>
+                    </td>
+                    <td class="duration-cell">{{ log.duration }} mins</td>
+                    <td class="calories-cell">{{ log.calories_burned }} kcal</td>
+                    <td class="distance-cell">{{ log.distance_km ? (log.distance_km | number: '1.1-2') + ' km' : '-' }}</td>
+                    <td class="date-cell">{{ log.activity_date | date: 'dd MMM yyyy' }}</td>
+                    <td class="actions-cell">
+                      <button (click)="startEdit(log)" class="btn-action edit" title="Edit Entry">✏️</button>
+                      <button (click)="deleteRecord(log.id)" class="btn-action delete" title="Delete Entry">🗑️</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Right column: Add / Edit Activity Log -->
+    <div class="right-col">
+      <div class="glass-card form-card">
+        <h3>{{ editingRecordId() !== null ? 'Edit Activity Entry' : 'Log New Activity' }}</h3>
+        
+        <form [formGroup]="activityForm" (ngSubmit)="onSubmit()" class="metric-form">
+          <div class="form-group">
+            <label for="activityType">Activity Type</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🏃‍♂️</span>
+              <select id="activityType" formControlName="activityType" class="select-input">
+                <option value="Walking">Walking</option>
+                <option value="Running">Running</option>
+                <option value="Cycling">Cycling</option>
+                <option value="Gym">Gym Workout</option>
+                <option value="Yoga">Yoga</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            @if (activityForm.get('activityType')?.touched && activityForm.get('activityType')?.errors?.['required']) {
+              <span class="error-text">Activity type is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="duration">Duration (minutes)</label>
+            <div class="input-wrapper">
+              <span class="input-icon">⏱️</span>
+              <input
+                id="duration"
+                type="number"
+                formControlName="duration"
+                placeholder="e.g. 45"
+                [class.error]="activityForm.get('duration')?.touched && activityForm.get('duration')?.invalid"
+              />
+            </div>
+            @if (activityForm.get('duration')?.touched && activityForm.get('duration')?.errors?.['required']) {
+              <span class="error-text">Duration is required</span>
+            }
+            @if (activityForm.get('duration')?.touched && (activityForm.get('duration')?.errors?.['min'] || activityForm.get('duration')?.errors?.['max'])) {
+              <span class="error-text">Enter a valid duration between 1 and 1440 mins</span>
+            }
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="caloriesBurned">Calories (kcal) - Opt</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🔥</span>
+                <input
+                  id="caloriesBurned"
+                  type="number"
+                  formControlName="caloriesBurned"
+                  placeholder="e.g. 300"
+                  [class.error]="activityForm.get('caloriesBurned')?.touched && activityForm.get('caloriesBurned')?.invalid"
+                />
+              </div>
+              @if (activityForm.get('caloriesBurned')?.touched && activityForm.get('caloriesBurned')?.errors?.['min']) {
+                <span class="error-text">Cannot be negative</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="distanceKm">Distance (km) - Opt</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🗺️</span>
+                <input
+                  id="distanceKm"
+                  type="number"
+                  step="0.01"
+                  formControlName="distanceKm"
+                  placeholder="e.g. 5.2"
+                  [class.error]="activityForm.get('distanceKm')?.touched && activityForm.get('distanceKm')?.invalid"
+                />
+              </div>
+              @if (activityForm.get('distanceKm')?.touched && activityForm.get('distanceKm')?.errors?.['min']) {
+                <span class="error-text">Cannot be negative</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="activityDate">Workout Date</label>
+            <div class="input-wrapper">
+              <span class="input-icon">📅</span>
+              <input
+                id="activityDate"
+                type="date"
+                formControlName="activityDate"
+                [class.error]="activityForm.get('activityDate')?.touched && activityForm.get('activityDate')?.invalid"
+              />
+            </div>
+            @if (activityForm.get('activityDate')?.touched && activityForm.get('activityDate')?.errors?.['required']) {
+              <span class="error-text">Date is required</span>
+            }
+          </div>
+
+          <div class="form-actions">
+            @if (editingRecordId() !== null) {
+              <button type="button" (click)="cancelEdit()" class="btn btn-secondary" [disabled]="isSubmitting()">
+                Cancel
+              </button>
+            }
+            <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+              @if (isSubmitting()) {
+                <span class="spinner"></span> Saving...
+              } @else {
+                {{ editingRecordId() !== null ? 'Update Log' : 'Log Workout' }}
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
