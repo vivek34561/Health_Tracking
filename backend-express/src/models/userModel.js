@@ -115,10 +115,22 @@ async function updateProfile(userId, { age, height, weight, gender, activityLeve
   return result.affectedRows > 0;
 }
 
+/**
+ * Update the password hash for a user
+ */
+async function updatePassword(userId, newPasswordHash) {
+  const [result] = await db.execute(
+    'UPDATE users SET password_hash = ? WHERE id = ?',
+    [newPasswordHash, userId]
+  );
+  return result.affectedRows > 0;
+}
+
 module.exports = {
   findByEmail,
   findById,
   createUser,
   getProfile,
-  updateProfile
+  updateProfile,
+  updatePassword
 };

@@ -9,6 +9,7 @@ router.use(authMiddleware);
 
 router.post('/', waterController.addWater);
 router.get('/', waterController.getWaterHistory);
+router.put('/:id', waterController.updateWater);
 router.delete('/:id', waterController.deleteWater);
 
 module.exports = router;

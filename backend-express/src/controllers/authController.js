@@ -210,9 +210,80 @@ async function updateProfile(req, res) {
   }
 }
 
+/**
+ * Logout current user
+ * JWT is stateless — instructs the frontend to discard the token.
+ */
+async function logout(req, res) {
+  return res.status(200).json({
+    success: true,
+    message: 'Logged out successfully'
+  });
+}
+
+/**
+ * Change password for current user
+ */
+async function changePassword(req, res) {
+  try {
+    const userId = req.user.id;
+    const { current_password, new_password } = req.body;
+
+    if (!current_password || !new_password) {
+      return res.status(400).json({
+        success: false,
+        message: 'current_password and new_password are required.'
+      });
+    }
+
+    if (new_password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'new_password must be at least 6 characters long.'
+      });
+    }
+
+    // Fetch full user row to get password_hash
+    const user = await userModel.findByEmail(req.user.email);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found.'
+      });
+    }
+
+    // Verify current password
+    const isMatch = await bcrypt.compare(current_password, user.password_hash);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Current password is incorrect.'
+      });
+    }
+
+    // Hash and persist new password
+    const salt = await bcrypt.genSalt(10);
+    const newHash = await bcrypt.hash(new_password, salt);
+    await userModel.updatePassword(userId, newHash);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+  } catch (error) {
+    console.error('Change password error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'An error occurred while changing the password.'
+    });
+  }
+}
+
 module.exports = {
   register,
   login,
   getProfile,
-  updateProfile
+  updateProfile,
+  logout,
+  changePassword
 };
