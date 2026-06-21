@@ -142,6 +142,6 @@ export class AiChatbotComponent implements AfterViewChecked {
       if (el) {
         el.scrollTop = el.scrollHeight;
       }
-    } catch {}
+    } catch { }
   }
 }

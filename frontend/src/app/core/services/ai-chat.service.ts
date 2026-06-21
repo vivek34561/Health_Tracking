@@ -11,18 +11,24 @@ export interface ChatMessage {
   intent?: string;
   sources?: string[];
   isLoading?: boolean;
+  confirmationRequired?: boolean;
+  confirmAction?: { tool: string; id: number };
 }
 
 export interface ChatRequest {
   message: string;
   conversation_history: { role: string; content: string }[];
   user_id?: number;
+  confirmed_action?: { tool: string; id: number };
 }
 
 export interface ChatResponse {
   reply: string;
   intent: string;
   sources_used: string[];
+  confirmation_required?: boolean;
+  confirm_action?: { tool: string; id: number };
+  structured_data?: any;
 }
 
 export interface UploadResponse {
@@ -39,6 +45,7 @@ export class AiChatService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
 
+  private readonly GATEWAY_URL = 'http://localhost:5000/api/ai';
   private readonly FASTAPI_URL = 'http://localhost:8000';
 
   readonly messages = signal<ChatMessage[]>([
@@ -102,14 +109,14 @@ export class AiChatService {
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
 
     this.http.post<ChatResponse>(
-      `${this.FASTAPI_URL}/api/chat`,
+      `${this.GATEWAY_URL}/chat`,
       request,
       { headers }
     ).pipe(
       catchError(err => {
         const errorMsg = err.status === 0
-          ? 'Cannot connect to AI service. Please make sure the AI backend is running on port 8000.'
-          : `Error: ${err.error?.detail || err.message || 'Something went wrong'}`;
+          ? 'Cannot connect to AI service. Please make sure the backend is running.'
+          : `Error: ${err.error?.message || err.error?.detail || err.message || 'Something went wrong'}`;
         return throwError(() => new Error(errorMsg));
       })
     ).subscribe({
@@ -125,6 +132,8 @@ export class AiChatService {
               timestamp: new Date(),
               intent: response.intent,
               sources: response.sources_used,
+              confirmationRequired: response.confirmation_required,
+              confirmAction: response.confirm_action,
             };
           }
           return updated;
@@ -150,6 +159,107 @@ export class AiChatService {
         });
         this.isLoading.set(false);
       }
+    });
+  }
+
+  confirmAction(action: { tool: string; id: number }): void {
+    // Clear confirmation state from the last message bubble
+    this.messages.update(msgs => {
+      const updated = [...msgs];
+      const last = updated[updated.length - 1];
+      if (last && last.role === 'assistant') {
+        last.confirmationRequired = false;
+        last.confirmAction = undefined;
+      }
+      return updated;
+    });
+
+    // Add loading placeholder
+    const loadingMsg: ChatMessage = {
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+      isLoading: true,
+    };
+    this.messages.update(msgs => [...msgs, loadingMsg]);
+    this.isLoading.set(true);
+
+    const history = this.messages()
+      .filter(m => !m.isLoading)
+      .slice(-20)
+      .map(m => ({ role: m.role, content: m.content }));
+
+    const request: ChatRequest = {
+      message: 'Yes, please proceed with deletion.',
+      conversation_history: history,
+      user_id: this.getUserId(),
+      confirmed_action: action
+    };
+
+    const token = this.authService.token() || localStorage.getItem('ht_token') || '';
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+
+    this.http.post<ChatResponse>(
+      `${this.GATEWAY_URL}/chat`,
+      request,
+      { headers }
+    ).pipe(
+      catchError(err => {
+        const errorMsg = `Error executing deletion: ${err.error?.message || err.message}`;
+        return throwError(() => new Error(errorMsg));
+      })
+    ).subscribe({
+      next: (response: ChatResponse) => {
+        this.messages.update(msgs => {
+          const updated = [...msgs];
+          const idx = updated.reduce((acc: number, m: ChatMessage, i: number) => m.isLoading ? i : acc, -1);
+          if (idx !== -1) {
+            updated[idx] = {
+              role: 'assistant',
+              content: response.reply,
+              timestamp: new Date(),
+              intent: response.intent,
+              sources: response.sources_used
+            };
+          }
+          return updated;
+        });
+        this.isLoading.set(false);
+      },
+      error: (err: Error) => {
+        this.messages.update(msgs => {
+          const updated = [...msgs];
+          const idx = updated.reduce((acc: number, m: ChatMessage, i: number) => m.isLoading ? i : acc, -1);
+          if (idx !== -1) {
+            updated[idx] = {
+              role: 'assistant',
+              content: `⚠️ ${err.message}`,
+              timestamp: new Date()
+            };
+          }
+          return updated;
+        });
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  cancelAction(): void {
+    // Clear confirmation state from the last message bubble
+    this.messages.update(msgs => {
+      const updated = [...msgs];
+      const last = updated[updated.length - 1];
+      if (last && last.role === 'assistant') {
+        last.confirmationRequired = false;
+        last.confirmAction = undefined;
+      }
+      
+      updated.push({
+        role: 'assistant',
+        content: 'Deletion cancelled.',
+        timestamp: new Date()
+      });
+      return updated;
     });
   }
 

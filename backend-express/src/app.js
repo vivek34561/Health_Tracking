@@ -42,6 +42,10 @@ app.use('/api/dashboard', dashboardRoutes);
 // Reports routes
 app.use('/api/reports', reportRoutes);
 
+// AI Gateway routes
+const aiRoutes = require('./routes/aiRoutes');
+app.use('/api/ai', aiRoutes);
+
 // Root path handler
 app.use((req, res, next) => {
   if (req.path === '/' || req.path === '/api') {

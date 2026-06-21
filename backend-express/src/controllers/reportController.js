@@ -144,7 +144,71 @@ async function getWeeklyReport(req, res) {
     }
 
     const report = await getReportDataForPeriod(userId, 7, date);
-    return res.status(200).json(report);
+    const allGoals = await reportModel.getAllGoalsProgress(userId);
+
+    // Compute goalsCompleted for each day dynamically
+    const days = report.daily_data.map(day => {
+      let goalsCompleted = 0;
+      const currentDay = new Date(day.date);
+      for (const goal of allGoals) {
+        const start = new Date(goal.startDate);
+        const end = new Date(goal.endDate);
+        if (currentDay >= start && currentDay <= end) {
+          if (goal.goalType === 'WATER' && day.water >= goal.targetValue) {
+            goalsCompleted++;
+          } else if (goal.goalType === 'SLEEP' && day.sleep >= goal.targetValue) {
+            goalsCompleted++;
+          } else if (goal.goalType === 'WEIGHT' && day.weight !== null && day.weight <= goal.targetValue) {
+            goalsCompleted++;
+          } else if (goal.goalType === 'ACTIVITY' && day.activity_count >= 1) {
+            goalsCompleted++;
+          }
+        }
+      }
+      return {
+        date: day.date,
+        water: day.water,
+        sleep: day.sleep,
+        weight: day.weight,
+        activityCount: day.activity_count,
+        goalsCompleted: goalsCompleted
+      };
+    });
+
+    // Compute completion rate of active goals
+    let goalsCompletionRate = 0;
+    const activeGoals = allGoals.filter(g => g.status === 'ACTIVE' || (g.status === 'COMPLETED' && new Date(g.endDate) >= new Date(report.daily_data[0].date)));
+    if (activeGoals.length > 0) {
+      const sumPct = activeGoals.reduce((sum, g) => {
+        const target = parseFloat(g.targetValue);
+        const current = parseFloat(g.currentValue);
+        if (target <= 0) return sum;
+        return sum + Math.min(100, Math.max(0, (current / target) * 100));
+      }, 0);
+      goalsCompletionRate = Math.round(sumPct / activeGoals.length);
+    }
+
+    const startDateStr = report.daily_data[0].date;
+    const endDateStr = report.daily_data[report.daily_data.length - 1].date;
+
+    return res.status(200).json({
+      // Test compatibility
+      avg_sleep: report.avg_sleep,
+      avg_water: report.avg_water,
+      total_workouts: report.total_workouts,
+      weight_change: report.weight_change,
+      daily_data: report.daily_data,
+
+      // Frontend compatibility
+      week: `${startDateStr} to ${endDateStr}`,
+      days: days,
+      averages: {
+        water: report.avg_water,
+        sleep: report.avg_sleep,
+        activityCount: parseFloat((report.total_workouts / 7).toFixed(1)),
+        goalsCompletionRate: goalsCompletionRate
+      }
+    });
   } catch (error) {
     console.error('Get weekly report error:', error);
     return res.status(500).json({ success: false, message: 'An error occurred while generating weekly report.' });
@@ -165,7 +229,59 @@ async function getMonthlyReport(req, res) {
     }
 
     const report = await getReportDataForPeriod(userId, 30, date);
-    return res.status(200).json(report);
+    const allGoals = await reportModel.getAllGoalsProgress(userId);
+
+    // Compute completion rate of active goals
+    let goalsCompletionRate = 0;
+    const activeGoals = allGoals.filter(g => g.status === 'ACTIVE' || (g.status === 'COMPLETED' && new Date(g.endDate) >= new Date(report.daily_data[0].date)));
+    if (activeGoals.length > 0) {
+      const sumPct = activeGoals.reduce((sum, g) => {
+        const target = parseFloat(g.targetValue);
+        const current = parseFloat(g.currentValue);
+        if (target <= 0) return sum;
+        return sum + Math.min(100, Math.max(0, (current / target) * 100));
+      }, 0);
+      goalsCompletionRate = Math.round(sumPct / activeGoals.length);
+    }
+
+    // Health Score calculation
+    const waterDays = report.daily_data.filter(d => d.water >= 2000).length;
+    const waterPct = (waterDays / 30) * 100;
+
+    const sleepDays = report.daily_data.filter(d => d.sleep >= 7).length;
+    const sleepPct = (sleepDays / 30) * 100;
+
+    const workoutCount = report.total_workouts;
+    const activityPct = Math.min(100, (workoutCount / 12) * 100);
+
+    const healthScore = Math.max(10, Math.min(100, Math.round((waterPct + sleepPct + activityPct + goalsCompletionRate) / 4)));
+
+    // Extract month name
+    const end = new Date(report.daily_data[report.daily_data.length - 1].date);
+    const monthName = end.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+    // Calculate total water
+    const totalWater = report.daily_data.reduce((sum, d) => sum + d.water, 0);
+
+    return res.status(200).json({
+      // Test compatibility
+      avg_sleep: report.avg_sleep,
+      avg_water: report.avg_water,
+      total_workouts: report.total_workouts,
+      weight_change: report.weight_change,
+      daily_data: report.daily_data,
+
+      // Frontend compatibility
+      month: monthName,
+      weeks: [],
+      totals: {
+        totalWater: totalWater,
+        avgSleep: report.avg_sleep,
+        totalActivities: report.total_workouts,
+        weightChange: report.weight_change
+      },
+      healthScore: healthScore
+    });
   } catch (error) {
     console.error('Get monthly report error:', error);
     return res.status(500).json({ success: false, message: 'An error occurred while generating monthly report.' });
@@ -214,7 +330,7 @@ async function getProgressReport(req, res) {
       completion_percentage: item.targetValue > 0 ? Math.round(Math.min(100, (parseFloat(item.currentValue) / parseFloat(item.targetValue)) * 100)) : 0
     }));
 
-    // Construct 4-week trends (Week 1 = most recent, Week 4 = oldest)
+    // Construct 4-week trends (Week 1 = oldest, Week 4 = most recent)
     const daily = past28DaysReport.daily_data;
     const weeklyTrends = [];
     for (let i = 0; i < 4; i++) {
@@ -253,11 +369,22 @@ async function getProgressReport(req, res) {
     weeklyTrends.sort((a, b) => a.week_number - b.week_number);
 
     return res.status(200).json({
+      // Test compatibility
       goals_summary: goalsCount,
       goals: goalsList,
-      weekly_trends: weeklyTrends
-    });
+      weekly_trends: weeklyTrends,
 
+      // Frontend compatibility mapping
+      weights: past28DaysReport.daily_data.filter(d => d.weight !== null).map(d => ({ date: d.date, weight: d.weight })),
+      waterTrend: past28DaysReport.daily_data.map(d => ({ date: d.date, total: d.water })),
+      sleepTrend: past28DaysReport.daily_data.map(d => ({ date: d.date, hours: d.sleep })),
+      activityTrend: past28DaysReport.daily_data.map(d => ({ date: d.date, count: d.activity_count })),
+      goalProgress: goalsList.filter(g => g.status === 'ACTIVE').map(g => ({
+        type: g.goal_type,
+        current: g.current_value,
+        target: g.target_value
+      }))
+    });
   } catch (error) {
     console.error('Get progress report error:', error);
     return res.status(500).json({ success: false, message: 'An error occurred while generating progress analytics.' });
