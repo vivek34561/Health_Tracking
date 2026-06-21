@@ -1,4 +1,5 @@
 const weightModel = require('../models/weightModel');
+const goalModel = require('../models/goalModel');
 
 /**
  * Add a new weight record
@@ -32,7 +33,7 @@ async function addWeight(req, res) {
     }
 
     const recordId = await weightModel.create(userId, weightNum, recordedAt);
-
+    await goalModel.syncGoalProgress(userId, 'WEIGHT');
     return res.status(201).json({
       success: true,
       message: 'Weight recorded successfully',
@@ -103,6 +104,8 @@ async function updateWeight(req, res) {
       });
     }
 
+    await goalModel.syncGoalProgress(userId, 'WEIGHT');
+
     return res.status(200).json({
       success: true,
       message: 'Weight record updated successfully'
@@ -131,6 +134,8 @@ async function deleteWeight(req, res) {
         message: 'Weight record not found or not owned by user.'
       });
     }
+
+    await goalModel.syncGoalProgress(userId, 'WEIGHT');
 
     return res.status(200).json({
       success: true,

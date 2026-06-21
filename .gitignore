@@ -1,1 +1,15 @@
 /db
+.env
+*.env
+node_modules/
+dist/
+.angular/
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.env.local
+.env.*.local

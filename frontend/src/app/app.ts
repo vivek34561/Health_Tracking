@@ -4,11 +4,12 @@ import { AuthService } from './core/services/auth.service';
 import { ThemeService } from './core/services/theme.service';
 import { NotificationService } from './core/services/notification.service';
 import { ToastComponent } from './shared/components/toast/toast';
+import { AiChatbotComponent } from './shared/components/ai-chatbot/ai-chatbot';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, ToastComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, ToastComponent, AiChatbotComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

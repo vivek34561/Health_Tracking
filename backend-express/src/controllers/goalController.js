@@ -95,6 +95,8 @@ async function addGoal(req, res) {
       status: goalStatus
     });
 
+    await goalModel.syncGoalProgress(userId, typeUpper);
+
     return res.status(201).json({
       success: true,
       message: 'Goal created successfully',
@@ -115,6 +117,13 @@ async function addGoal(req, res) {
 async function getGoals(req, res) {
   try {
     const userId = req.user.id;
+    
+    // Sync all active goals progress before fetching history
+    await goalModel.syncGoalProgress(userId, 'WATER');
+    await goalModel.syncGoalProgress(userId, 'SLEEP');
+    await goalModel.syncGoalProgress(userId, 'WEIGHT');
+    await goalModel.syncGoalProgress(userId, 'ACTIVITY');
+
     const history = await goalModel.getHistory(userId);
 
     const formatted = history.map(item => ({

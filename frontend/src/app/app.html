@@ -288,5 +288,10 @@
   </div>
 }
 
+<!-- AI Health Assistant Chatbot (floating, visible on all authenticated pages) -->
+@if (authService.isAuthenticated()) {
+  <app-ai-chatbot></app-ai-chatbot>
+}
+
 <!-- Global Toast Outlet -->
 <app-toast></app-toast>

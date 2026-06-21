@@ -1,4 +1,5 @@
 const sleepModel = require('../models/sleepModel');
+const goalModel = require('../models/goalModel');
 
 /**
  * Add a new sleep log
@@ -47,6 +48,7 @@ async function addSleep(req, res) {
     }
 
     const recordId = await sleepModel.create(userId, sleep_start, sleep_end, totalHours, qScore);
+    await goalModel.syncGoalProgress(userId, 'SLEEP');
     return res.status(201).json({
       success: true,
       message: 'Sleep record added',
@@ -132,6 +134,8 @@ async function updateSleep(req, res) {
       });
     }
 
+    await goalModel.syncGoalProgress(userId, 'SLEEP');
+
     return res.status(200).json({
       success: true,
       message: 'Sleep record updated successfully'
@@ -160,6 +164,8 @@ async function deleteSleep(req, res) {
         message: 'Sleep record not found or not owned by user.'
       });
     }
+
+    await goalModel.syncGoalProgress(userId, 'SLEEP');
 
     return res.status(200).json({
       success: true,

@@ -54,6 +54,18 @@ async function getDashboardSummary(req, res) {
       goalCompletion = Math.round(sum / activeGoals.length);
     }
 
+    // Extract specific goal values if available (fallback to frontend defaults if not set)
+    const waterGoalObj = activeGoals.find(g => g.goalType && g.goalType.toUpperCase() === 'WATER');
+    const sleepGoalObj = activeGoals.find(g => g.goalType && g.goalType.toUpperCase() === 'SLEEP');
+
+    const waterGoalVal = waterGoalObj ? parseFloat(waterGoalObj.targetValue) : 2500;
+    const sleepGoalVal = sleepGoalObj ? parseFloat(sleepGoalObj.targetValue) : 8;
+
+    const goalsProgress = activeGoals.map(goal => ({
+      targetValue: parseFloat(goal.targetValue),
+      currentValue: parseFloat(goal.currentValue)
+    }));
+
     // Return merged responses satisfying both user specification and database design API specs
     return res.status(200).json({
       water: waterConsumed,
@@ -63,7 +75,16 @@ async function getDashboardSummary(req, res) {
       water_consumed: waterConsumed,
       sleep_hours: sleepHours,
       activities_today: activitiesToday,
-      goal_completion: goalCompletion
+      goal_completion: goalCompletion,
+
+      // Frontend compatibility mapping
+      waterToday: waterConsumed,
+      waterGoal: waterGoalVal,
+      sleepToday: sleepHours,
+      sleepGoal: sleepGoalVal,
+      activityCount: activitiesToday,
+      goalsProgress: goalsProgress,
+      date: date
     });
 
   } catch (error) {

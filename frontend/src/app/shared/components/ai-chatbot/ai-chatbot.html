@@ -1,0 +1,196 @@
+<!-- Floating Chat Button -->
+<button
+  class="chat-fab"
+  id="ai-chat-fab"
+  (click)="chatService.toggleChat()"
+  [class.open]="chatService.isOpen()"
+  title="HealthAI Assistant"
+  aria-label="Open AI Health Assistant"
+>
+  <span class="fab-icon fab-ai">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="url(#fabGrad)"/>
+      <path d="M8 12h.01M12 12h.01M16 12h.01" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <defs>
+        <linearGradient id="fabGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#4285f4"/>
+          <stop offset="100%" stop-color="#9b59b6"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </span>
+  <span class="fab-icon fab-close">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </span>
+  @if (chatService.hasNewMessage()) {
+    <span class="fab-badge" aria-label="New message"></span>
+  }
+</button>
+
+<!-- Chat Popup Panel -->
+<div
+  class="chat-panel"
+  id="ai-chat-panel"
+  [class.visible]="chatService.isOpen()"
+  role="dialog"
+  aria-label="HealthAI Assistant"
+  aria-modal="true"
+>
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <div class="chat-avatar">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="url(#headerGrad)"/>
+          <path d="M8 12h.01M12 12h.01M16 12h.01" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#4285f4"/>
+              <stop offset="100%" stop-color="#9b59b6"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="online-dot" aria-hidden="true"></span>
+      </div>
+      <div class="chat-header-text">
+        <span class="chat-title">HealthAI</span>
+        <span class="chat-subtitle">Always here to help</span>
+      </div>
+    </div>
+    <div class="chat-header-actions">
+      <button class="header-btn" (click)="chatService.clearHistory()" title="Clear chat" aria-label="Clear chat history">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+        </svg>
+      </button>
+      <button class="header-btn" (click)="chatService.toggleChat()" title="Close" aria-label="Close chat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Quick Actions (shown only when just the greeting is there) -->
+  @if (chatService.messages().length <= 1) {
+    <div class="quick-actions">
+      <button class="quick-chip" (click)="sendQuick('How was my sleep last week?')">💤 My sleep</button>
+      <button class="quick-chip" (click)="sendQuick('Am I achieving my goals?')">🎯 Goals status</button>
+      <button class="quick-chip" (click)="sendQuick('How has my weight changed?')">⚖️ Weight trend</button>
+      <button class="quick-chip" (click)="sendQuick('What should I improve?')">📈 Recommendations</button>
+    </div>
+  }
+
+  <!-- Messages -->
+  <div class="chat-messages" #messagesContainer id="chat-messages-container">
+    @for (msg of chatService.messages(); track $index) {
+      <div class="message-row" [class.user-row]="msg.role === 'user'" [class.ai-row]="msg.role === 'assistant'">
+        @if (msg.role === 'assistant') {
+          <div class="msg-avatar">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+              <circle cx="12" cy="12" r="10" fill="url(#msgAvatarGrad)"/>
+              <path d="M8 12h.01M12 12h.01M16 12h.01" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <defs>
+                <linearGradient id="msgAvatarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#4285f4"/>
+                  <stop offset="100%" stop-color="#9b59b6"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+        }
+        <div class="message-content-wrapper">
+          <div class="message-bubble" [class.user-bubble]="msg.role === 'user'" [class.ai-bubble]="msg.role === 'assistant'">
+            @if (msg.isLoading) {
+              <div class="typing-indicator" aria-label="AI is typing">
+                <span></span><span></span><span></span>
+              </div>
+            } @else {
+              <div class="message-text" [innerHTML]="formatMessage(msg.content)"></div>
+            }
+          </div>
+
+          <!-- Source badges -->
+          @if (msg.sources && msg.sources.length > 0) {
+            <div class="source-badges">
+              @for (src of msg.sources; track src) {
+                <span class="source-badge" [class]="'src-' + src.replace('_', '-')">
+                  {{ getSourceLabel(src) }}
+                </span>
+              }
+            </div>
+          }
+
+          <span class="msg-time">{{ msg.timestamp | date:'HH:mm' }}</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Upload progress bar -->
+  @if (isUploading()) {
+    <div class="upload-progress">
+      <div class="upload-progress-bar"></div>
+      <span>Processing {{ uploadingFileName() }}…</span>
+    </div>
+  }
+
+  <!-- Input Area -->
+  <div class="chat-input-area">
+    <!-- File upload button -->
+    <label class="upload-btn" title="Upload medical report (PDF)" aria-label="Upload PDF report">
+      <input
+        type="file"
+        accept=".pdf"
+        (change)="onFileSelect($event)"
+        [disabled]="isUploading()"
+        style="display:none"
+        id="pdf-upload-input"
+        aria-label="Select PDF file"
+      />
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+      </svg>
+    </label>
+
+    <div class="input-wrapper">
+      <textarea
+        #messageInput
+        class="chat-textarea"
+        placeholder="Ask about your health…"
+        [disabled]="chatService.isLoading()"
+        (keydown.enter)="onEnterKey($event)"
+        (input)="autoResize($event)"
+        rows="1"
+        id="chat-message-input"
+        aria-label="Type your health question"
+      ></textarea>
+    </div>
+
+    <button
+      class="send-btn"
+      id="chat-send-btn"
+      (click)="sendMessage()"
+      [disabled]="chatService.isLoading() || !hasInput()"
+      aria-label="Send message"
+      title="Send"
+    >
+      @if (chatService.isLoading()) {
+        <span class="send-spinner"></span>
+      } @else {
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      }
+    </button>
+  </div>
+
+  <div class="chat-footer-note">
+    Powered by Groq · HuggingFace · ChromaDB
+  </div>
+</div>

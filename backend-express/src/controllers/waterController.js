@@ -1,4 +1,5 @@
 const waterModel = require('../models/waterModel');
+const goalModel = require('../models/goalModel');
 
 /**
  * Add a new water log
@@ -31,6 +32,7 @@ async function addWater(req, res) {
     }
 
     const recordId = await waterModel.create(userId, amount, consumed_at);
+    await goalModel.syncGoalProgress(userId, 'WATER');
     return res.status(201).json({
       success: true,
       message: 'Water intake added',
@@ -101,6 +103,8 @@ async function updateWater(req, res) {
       });
     }
 
+    await goalModel.syncGoalProgress(userId, 'WATER');
+
     return res.status(200).json({
       success: true,
       message: 'Water intake log updated successfully'
@@ -129,6 +133,8 @@ async function deleteWater(req, res) {
         message: 'Water log record not found or not owned by user.'
       });
     }
+
+    await goalModel.syncGoalProgress(userId, 'WATER');
 
     return res.status(200).json({
       success: true,

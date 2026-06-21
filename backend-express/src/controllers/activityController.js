@@ -1,4 +1,5 @@
 const activityModel = require('../models/activityModel');
+const goalModel = require('../models/goalModel');
 
 // Title case helper
 function toTitleCase(str) {
@@ -77,6 +78,8 @@ async function addActivity(req, res) {
       distanceKm: distance,
       activityDate: activity_date
     });
+
+    await goalModel.syncGoalProgress(userId, 'ACTIVITY');
 
     return res.status(201).json({
       success: true,
@@ -196,6 +199,8 @@ async function updateActivity(req, res) {
       });
     }
 
+    await goalModel.syncGoalProgress(userId, 'ACTIVITY');
+
     return res.status(200).json({
       success: true,
       message: 'Activity record updated successfully'
@@ -224,6 +229,8 @@ async function deleteActivity(req, res) {
         message: 'Activity record not found or not owned by user.'
       });
     }
+
+    await goalModel.syncGoalProgress(userId, 'ACTIVITY');
 
     return res.status(200).json({
       success: true,
