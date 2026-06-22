@@ -121,26 +121,33 @@ export class AiChatService {
       })
     ).subscribe({
       next: (response: ChatResponse) => {
-        // Replace loading message with actual response
+        let messageIndex = -1;
+        // Replace loading message with actual response structure, empty content
         this.messages.update(msgs => {
           const updated = [...msgs];
           const idx = updated.reduce((acc: number, m: ChatMessage, i: number) => m.isLoading ? i : acc, -1);
           if (idx !== -1) {
             updated[idx] = {
               role: 'assistant',
-              content: response.reply,
+              content: '',
               timestamp: new Date(),
               intent: response.intent,
               sources: response.sources_used,
               confirmationRequired: response.confirmation_required,
               confirmAction: response.confirm_action,
             };
+            messageIndex = idx;
           }
           return updated;
         });
         this.isLoading.set(false);
         if (!this.isOpen()) {
           this.hasNewMessage.set(true);
+        }
+        
+        // Stream the text content word by word
+        if (messageIndex !== -1) {
+          this.streamMessage(response.reply, messageIndex);
         }
       },
       error: (err: Error) => {
@@ -210,21 +217,27 @@ export class AiChatService {
       })
     ).subscribe({
       next: (response: ChatResponse) => {
+        let messageIndex = -1;
         this.messages.update(msgs => {
           const updated = [...msgs];
           const idx = updated.reduce((acc: number, m: ChatMessage, i: number) => m.isLoading ? i : acc, -1);
           if (idx !== -1) {
             updated[idx] = {
               role: 'assistant',
-              content: response.reply,
+              content: '',
               timestamp: new Date(),
               intent: response.intent,
               sources: response.sources_used
             };
+            messageIndex = idx;
           }
           return updated;
         });
         this.isLoading.set(false);
+        
+        if (messageIndex !== -1) {
+          this.streamMessage(response.reply, messageIndex);
+        }
       },
       error: (err: Error) => {
         this.messages.update(msgs => {
@@ -283,6 +296,31 @@ export class AiChatService {
     if (this.isOpen()) {
       this.hasNewMessage.set(false);
     }
+  }
+
+  private streamMessage(reply: string, index: number): void {
+    const words = reply.split(' ');
+    let currentText = '';
+    let wordIndex = 0;
+
+    const timer = setInterval(() => {
+      if (wordIndex < words.length) {
+        currentText += (wordIndex === 0 ? '' : ' ') + words[wordIndex];
+        this.messages.update(msgs => {
+          const updated = [...msgs];
+          if (updated[index]) {
+            updated[index] = {
+              ...updated[index],
+              content: currentText
+            };
+          }
+          return updated;
+        });
+        wordIndex++;
+      } else {
+        clearInterval(timer);
+      }
+    }, 35);
   }
 
   clearHistory(): void {
