@@ -12,6 +12,7 @@ import { AiInsightsComponent } from './features/ai-insights/ai-insights';
 import { NotificationsComponent } from './features/notifications/notifications';
 import { ProfileComponent } from './features/profile/profile';
 import { SettingsComponent } from './features/settings/settings';
+import { BodyFatComponent } from './features/bodyfat/bodyfat';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -28,6 +29,7 @@ export const routes: Routes = [
   { path: 'notifications', component: NotificationsComponent, canActivate: [authGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
+  { path: 'bodyfat', component: BodyFatComponent, canActivate: [authGuard] },
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: '/dashboard' }
 ];

@@ -1,0 +1,253 @@
+<div class="bodyfat-container">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-title-wrapper">
+      <h1 class="page-title">AI Body Fat Predictor</h1>
+      <p class="page-subtitle">Estimate body fat percentage using advanced machine learning models trained on physiological measurements.</p>
+    </div>
+    <div class="unit-selector">
+      <button class="unit-btn" [class.active]="currentUnitSystem() === 'metric'" (click)="toggleUnitSystem('metric')">Metric (kg/cm)</button>
+      <button class="unit-btn" [class.active]="currentUnitSystem() === 'imperial'" (click)="toggleUnitSystem('imperial')">Imperial (lbs/in)</button>
+    </div>
+  </header>
+
+  <div class="content-grid">
+    <!-- Form Panel -->
+    <section class="card form-card">
+      <div class="card-header">
+        <h2 class="card-title">🔍 Input Body Measurements</h2>
+        <p class="card-subtitle">Please enter your age, weight, height, and body circumferences.</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="measurement-form">
+        <!-- Core metrics -->
+        <div class="form-section">
+          <h3 class="section-divider-title">Core Info</h3>
+          <div class="input-grid grid-3">
+            <div class="form-group">
+              <label for="gender">Gender</label>
+              <select id="gender" formControlName="gender" class="form-select">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="age">Age (Years)</label>
+              <input id="age" type="number" formControlName="age" class="form-input" placeholder="e.g. 30">
+            </div>
+            <div class="form-group">
+              <label for="density">Body Density (g/cm³)</label>
+              <input id="density" type="number" step="0.001" formControlName="density" class="form-input" placeholder="e.g. 1.05">
+              <span class="field-hint">Standard default pre-filled</span>
+            </div>
+          </div>
+          <div class="input-grid grid-2">
+            <div class="form-group">
+              <label for="weight">Weight ({{ currentUnitSystem() === 'metric' ? 'kg' : 'lbs' }})</label>
+              <input id="weight" type="number" step="0.1" formControlName="weight" class="form-input" placeholder="e.g. 70">
+            </div>
+            <div class="form-group">
+              <label for="height">Height ({{ currentUnitSystem() === 'metric' ? 'cm' : 'inches' }})</label>
+              <input id="height" type="number" step="0.1" formControlName="height" class="form-input" placeholder="e.g. 175">
+            </div>
+          </div>
+        </div>
+
+        <!-- Upper Body circumferences -->
+        <div class="form-section">
+          <h3 class="section-divider-title">Upper Body (cm)</h3>
+          <div class="input-grid grid-3">
+            <div class="form-group">
+              <label for="neck">Neck</label>
+              <input id="neck" type="number" step="0.1" formControlName="neck" class="form-input" placeholder="cm">
+            </div>
+            <div class="form-group">
+              <label for="chest">Chest</label>
+              <input id="chest" type="number" step="0.1" formControlName="chest" class="form-input" placeholder="cm">
+            </div>
+            <div class="form-group">
+              <label for="biceps">Biceps</label>
+              <input id="biceps" type="number" step="0.1" formControlName="biceps" class="form-input" placeholder="cm">
+            </div>
+            <div class="form-group">
+              <label for="forearm">Forearm</label>
+              <input id="forearm" type="number" step="0.1" formControlName="forearm" class="form-input" placeholder="cm">
+            </div>
+            <div class="form-group">
+              <label for="wrist">Wrist</label>
+              <input id="wrist" type="number" step="0.1" formControlName="wrist" class="form-input" placeholder="cm">
+            </div>
+          </div>
+        </div>
+
+        <!-- Lower Body circumferences -->
+        <div class="form-section">
+          <h3 class="section-divider-title">Mid & Lower Body (cm)</h3>
+          <div class="input-grid grid-3">
+            <div class="form-group">
+              <label for="abdomen">Abdomen</label>
+              <input id="abdomen" type="number" step="0.1" formControlName="abdomen" class="form-input" placeholder="cm">
+              <span class="field-hint">Measure at navel level</span>
+            </div>
+            <div class="form-group">
+              <label for="hip">Hip</label>
+              <input id="hip" type="number" step="0.1" formControlName="hip" class="form-input" placeholder="cm">
+            </div>
+            <div class="form-group">
+              <label for="thigh">Thigh</label>
+              <input id="thigh" type="number" step="0.1" formControlName="thigh" class="form-input" placeholder="cm">
+            </div>
+            <div class="form-group">
+              <label for="knee">Knee</label>
+              <input id="knee" type="number" step="0.1" formControlName="knee" class="form-input" placeholder="cm">
+            </div>
+            <div class="form-group">
+              <label for="ankle">Ankle</label>
+              <input id="ankle" type="number" step="0.1" formControlName="ankle" class="form-input" placeholder="cm">
+            </div>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="resetForm()" [disabled]="isLoading()">Reset</button>
+          <button type="submit" class="btn btn-primary btn-submit" [disabled]="isLoading()">
+            @if (isLoading()) {
+              <span class="spinner"></span> Predicting...
+            } @else {
+              ⚡ Run AI Prediction
+            }
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Results Panel -->
+    <section class="results-panel">
+      @if (result()) {
+        <!-- Display Prediction Output -->
+        <div class="card result-card animated-fade-in">
+          <div class="card-header centered">
+            <h2 class="card-title">🏆 AI Prediction Result</h2>
+            <p class="card-subtitle">Estimated Body Composition</p>
+          </div>
+
+          <div class="gauge-container">
+            <div class="gauge-wrapper">
+              <svg class="gauge-svg" viewBox="0 0 200 100">
+                <defs>
+                  <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#3498db" />
+                    <stop offset="25%" stop-color="#2ecc71" />
+                    <stop offset="60%" stop-color="#f1c40f" />
+                    <stop offset="100%" stop-color="#e74c3c" />
+                  </linearGradient>
+                </defs>
+                <!-- Arc background -->
+                <path d="M20,90 A80,80 0 0,1 180,90" fill="none" stroke="var(--color-border-light)" stroke-width="14" stroke-linecap="round"/>
+                <!-- Colored Arc -->
+                <path d="M20,90 A80,80 0 0,1 180,90" fill="none" stroke="url(#gaugeGrad)" stroke-width="14" stroke-linecap="round" opacity="0.85"/>
+              </svg>
+              <!-- Needle -->
+              <div class="gauge-needle" [style.transform]="getGaugeRotation()" [style.background-color]="getCategoryColor()"></div>
+            </div>
+
+            <div class="gauge-value-wrapper">
+              <span class="gauge-value">{{ result()?.predicted_bodyfat }}%</span>
+              <span class="gauge-label" [style.color]="getCategoryColor()">{{ result()?.category }}</span>
+            </div>
+          </div>
+
+          <div class="result-details">
+            <div class="description-box">
+              <p class="info-text">{{ result()?.description }}</p>
+            </div>
+
+            <!-- Health context guidelines -->
+            <div class="health-categories-table">
+              <div class="table-title">Standard References ({{ form.value.gender | titlecase }})</div>
+              <div class="reference-row">
+                <span>Athletes:</span>
+                <span>{{ form.value.gender === 'female' ? '14% - 20%' : '6% - 13%' }}</span>
+              </div>
+              <div class="reference-row">
+                <span>Fitness:</span>
+                <span>{{ form.value.gender === 'female' ? '21% - 24%' : '14% - 17%' }}</span>
+              </div>
+              <div class="reference-row">
+                <span>Average:</span>
+                <span>{{ form.value.gender === 'female' ? '25% - 31%' : '18% - 24%' }}</span>
+              </div>
+              <div class="reference-row">
+                <span>Obese:</span>
+                <span>{{ form.value.gender === 'female' ? '32%+' : '25%+' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Health Insights Recommendation Card -->
+        <div class="card recommendations-card animated-fade-in delay-1">
+          <h3 class="card-title">💡 Personalized AI Coaching</h3>
+          <p class="card-subtitle">Steps you can take based on this estimation:</p>
+          <ul class="recommendation-list">
+            @if (result()?.category === 'Obese') {
+              <li>🏋️‍♂️ <strong>Focus on Strength Training:</strong> Focus on progressive resistance exercises 3-4 times a week to build lean mass and raise resting energy expenditure.</li>
+              <li>🥗 <strong>Caloric Deficit:</strong> Create a sustainable 300-500 kcal deficit focusing on nutrient-dense, high-protein foods to preserve muscle during fat loss.</li>
+              <li>🚶‍♂️ <strong>Increase NEAT:</strong> Boost non-exercise activity like taking stairs or walking 8,000-10,000 steps daily.</li>
+            } @else if (result()?.category === 'Acceptable / Average') {
+              <li>⚡ <strong>Body Recomposition:</strong> Focus on a body recomp strategy. Maintain caloric intake around maintenance level while increasing protein intake and lifting weights regularly.</li>
+              <li>🏃‍♂️ <strong>Interval Cardio:</strong> Add 1-2 weekly High-Intensity Interval Training (HIIT) sessions to improve cardiovascular health and target stubborn visceral fat.</li>
+            } @else if (result()?.category === 'Fitness' || result()?.category === 'Athletes') {
+              <li>🌟 <strong>Peak Maintenance:</strong> You are in a highly functional range! Maintain your current structured fitness plan and focus on athletic recovery, sleep (7-9 hours), and proper micronutrient intake.</li>
+              <li>💪 <strong>Targeted Goals:</strong> Set specific milestones like increasing power output, muscle endurance, or mastering bodyweight movements.</li>
+            } @else {
+              <li>🍎 <strong>Healthy Gain:</strong> Focus on a slow caloric surplus (200-300 kcal) with balanced macronutrients to gain healthy weight/lean muscle safely.</li>
+            }
+          </ul>
+        </div>
+      } @else {
+        <!-- Welcome / Explanation panel -->
+        <div class="card welcome-card">
+          <div class="welcome-visual">
+            <svg class="dna-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M30 20 C50 20 50 80 70 80" stroke="url(#bluePurple)" stroke-width="6" stroke-linecap="round" />
+              <path d="M70 20 C50 20 50 80 30 80" stroke="url(#purpleBlue)" stroke-width="6" stroke-linecap="round" />
+              <circle cx="30" cy="20" r="6" fill="#4285f4"/>
+              <circle cx="70" cy="20" r="6" fill="#9b59b6"/>
+              <circle cx="30" cy="80" r="6" fill="#9b59b6"/>
+              <circle cx="70" cy="80" r="6" fill="#4285f4"/>
+              <line x1="39" y1="35" x2="61" y2="35" stroke="var(--color-border-light)" stroke-dasharray="3 3"/>
+              <line x1="50" y1="50" x2="50" y2="50" stroke="var(--color-border-light)" stroke-width="6"/>
+              <line x1="39" y1="65" x2="61" y2="65" stroke="var(--color-border-light)" stroke-dasharray="3 3"/>
+              <defs>
+                <linearGradient id="bluePurple" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#4285f4" />
+                  <stop offset="100%" stop-color="#9b59b6" />
+                </linearGradient>
+                <linearGradient id="purpleBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#9b59b6" />
+                  <stop offset="100%" stop-color="#4285f4" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <h2 class="card-title">AI Body Fat Model</h2>
+          <p class="info-text">
+            Our model uses a **Random Forest Regressor** trained on a clinical database of body density and circumferences. 
+          </p>
+          <div class="guidelines-box">
+            <h4 class="box-title">📏 Tips for Accurate Measurement:</h4>
+            <ul>
+              <li><strong>Neck:</strong> Measure just below the larynx, sloping slightly downward.</li>
+              <li><strong>Chest:</strong> Measure at the nipple line at the end of a normal exhalation.</li>
+              <li><strong>Abdomen:</strong> Measure horizontally at the level of the navel.</li>
+              <li><strong>Hip:</strong> Measure horizontally at the maximum extension of the buttocks.</li>
+              <li><strong>Wrist:</strong> Measure at the thinnest point of the wrist, just above the hand.</li>
+            </ul>
+          </div>
+        </div>
+      }
+    </section>
+  </div>
+</div>

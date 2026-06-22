@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import chat, upload, health
+from app.api import chat, upload, health, bodyfat_predict
 
 app = FastAPI(
     title="HealthAI — AI Service",
@@ -31,6 +31,7 @@ app.add_middleware(
 app.include_router(chat.router, prefix="/api", tags=["AI Chat"])
 app.include_router(upload.router, prefix="/api", tags=["Medical Reports"])
 app.include_router(health.router, prefix="/api", tags=["Health Data"])
+app.include_router(bodyfat_predict.router, prefix="/api", tags=["Body Fat Prediction"])
 
 
 @app.get("/")

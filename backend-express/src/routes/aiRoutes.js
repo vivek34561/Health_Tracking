@@ -50,4 +50,41 @@ router.post('/chat', async (req, res) => {
   }
 });
 
+router.post('/predict-bodyfat', async (req, res) => {
+  try {
+    const token = req.headers.authorization;
+
+    const response = await fetch('http://localhost:8000/api/predict-bodyfat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token
+      },
+      body: JSON.stringify(req.body)
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      let parsedErr = errText;
+      try {
+        parsedErr = JSON.parse(errText);
+      } catch (e) {}
+      
+      return res.status(response.status).json({
+        success: false,
+        message: parsedErr.detail || parsedErr.message || 'FastAPI service error'
+      });
+    }
+
+    const data = await response.json();
+    return res.json(data);
+  } catch (error) {
+    console.error('AI Predict Body Fat Gateway Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to connect to AI Service. Make sure FastAPI is running on port 8000.'
+    });
+  }
+});
+
 module.exports = router;
