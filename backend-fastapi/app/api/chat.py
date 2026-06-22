@@ -9,7 +9,8 @@ from app.tools.health_tools import (
     delete_weight_log,
     delete_sleep_log,
     delete_activity,
-    delete_goal
+    delete_goal,
+    delete_food_log
 )
 
 router = APIRouter()
@@ -72,7 +73,8 @@ async def chat(
             "delete_weight_log": delete_weight_log,
             "delete_sleep_log": delete_sleep_log,
             "delete_activity": delete_activity,
-            "delete_goal": delete_goal
+            "delete_goal": delete_goal,
+            "delete_food_log": delete_food_log
         }
         
         tool = tool_map.get(action.tool)

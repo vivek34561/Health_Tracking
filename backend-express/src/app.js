@@ -12,6 +12,9 @@ const activityRoutes = require('./routes/activityRoutes');
 const goalRoutes = require('./routes/goalRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const foodRoutes = require('./routes/foodRoutes');
+const nutritionRoutes = require('./routes/nutritionRoutes');
+const dietRoutes = require('./routes/dietRoutes');
 
 const app = express();
 
@@ -41,6 +44,11 @@ app.use('/api/dashboard', dashboardRoutes);
 
 // Reports routes
 app.use('/api/reports', reportRoutes);
+
+// Food Logs, Nutrition and Diet Goal routes
+app.use('/api/foods', foodRoutes);
+app.use('/api/nutrition', nutritionRoutes);
+app.use('/api/diet', dietRoutes);
 
 // AI Gateway routes
 const aiRoutes = require('./routes/aiRoutes');

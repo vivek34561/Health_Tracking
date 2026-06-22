@@ -539,6 +539,132 @@ async def generate_monthly_summary(config: RunnableConfig = None) -> str:
         f"- Net Weight Change: {result.get('weight_change', 0.0)} kg"
     )
 
+class FoodCreateInput(BaseModel):
+    food_name: str = Field(..., description="Name of the food item (e.g. Roti, Dal, Paneer, Boiled Egg).")
+    quantity: float = Field(..., description="Quantity consumed.")
+    unit: str = Field(..., description="Unit of measurement (grams, pieces, cups, ml).")
+    meal_type: str = Field(..., description="Meal category: BREAKFAST, LUNCH, DINNER, SNACKS.")
+    calories: Optional[float] = Field(None, description="Optional calorie content.")
+    protein: Optional[float] = Field(None, description="Optional protein content in grams.")
+    carbs: Optional[float] = Field(None, description="Optional carbs content in grams.")
+    fat: Optional[float] = Field(None, description="Optional fat content in grams.")
+    fiber: Optional[float] = Field(None, description="Optional fiber content in grams.")
+    created_at: Optional[str] = Field(None, description="Optional ISO datetime of logging.")
+
+    @field_validator('quantity')
+    @classmethod
+    def validate_quantity(cls, v):
+        if v <= 0:
+            raise ValueError("Quantity must be greater than 0.")
+        return v
+
+    @field_validator('meal_type')
+    @classmethod
+    def validate_meal_type(cls, v):
+        if v.upper() not in ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACKS']:
+            raise ValueError("Meal type must be one of: BREAKFAST, LUNCH, DINNER, SNACKS.")
+        return v.upper()
+
+@tool(args_schema=FoodCreateInput)
+async def create_food_log(
+    food_name: str,
+    quantity: float,
+    unit: str,
+    meal_type: str,
+    calories: Optional[float] = None,
+    protein: Optional[float] = None,
+    carbs: Optional[float] = None,
+    fat: Optional[float] = None,
+    fiber: Optional[float] = None,
+    created_at: Optional[str] = None,
+    config: RunnableConfig = None
+) -> str:
+    """Log a food item meal with name, quantity, unit, meal type, and optional nutrition details."""
+    payload = {
+        "food_name": food_name,
+        "quantity": quantity,
+        "unit": unit,
+        "meal_type": meal_type.upper()
+    }
+    if calories is not None: payload["calories"] = calories
+    if protein is not None: payload["protein"] = protein
+    if carbs is not None: payload["carbs"] = carbs
+    if fat is not None: payload["fat"] = fat
+    if fiber is not None: payload["fiber"] = fiber
+    if created_at: payload["created_at"] = created_at
+
+    result = await _api_call("POST", "/api/foods", payload, config)
+    if "success" in result and not result["success"]:
+        return f"Error: {result['error']}"
+    return f"Successfully logged food item '{food_name}' ({quantity} {unit}) for {meal_type.upper()} (Log ID: {result.get('id')})."
+
+@tool
+async def get_food_logs(config: RunnableConfig = None) -> str:
+    """Retrieve logged food history logs for today or recently."""
+    result = await _api_call("GET", "/api/foods", None, config)
+    if isinstance(result, dict) and "success" in result and not result["success"]:
+        return f"Error: {result['error']}"
+    if not result:
+        return "No food logs found."
+
+    lines = ["Here are your logged foods:"]
+    for item in result[:10]:
+        date_str = item.get("created_at") or "Unknown Date"
+        local_date = format_to_local_time(date_str)
+        lines.append(
+            f"- ID: {item.get('id')} | {item.get('food_name')} | Quantity: {item.get('quantity')} {item.get('unit')} | "
+            f"Meal: {item.get('meal_type')} | Calories: {item.get('calories')} kcal | "
+            f"Macros: P: {item.get('protein')}g, C: {item.get('carbs')}g, F: {item.get('fat')}g | Date: {local_date}"
+        )
+    return "\n".join(lines)
+
+@tool(args_schema=RecordIdInput)
+async def delete_food_log(record_id: int, config: RunnableConfig = None) -> str:
+    """Delete a food log entry by its ID."""
+    result = await _api_call("DELETE", f"/api/foods/{record_id}", None, config)
+    if "success" in result and not result["success"]:
+        return f"Error: {result['error']}"
+    return f"Successfully deleted food log entry {record_id}."
+
+@tool
+async def get_nutrition_summary(config: RunnableConfig = None) -> str:
+    """Retrieve today's total consumed nutrition against daily macro targets."""
+    result = await _api_call("GET", "/api/nutrition/today", None, config)
+    if isinstance(result, dict) and "success" in result and not result["success"]:
+        return f"Error: {result['error']}"
+
+    consumed = result.get("consumed", {})
+    targets = result.get("targets", {})
+    remaining = result.get("remaining", {})
+
+    return (
+        f"Today's Nutrition Summary (Date: {result.get('date')}):\n"
+        f"- Goal Type: {result.get('goal_type', 'MAINTENANCE')}\n"
+        f"- Calories: Consumed {consumed.get('calories', 0)} kcal / Target {targets.get('calories', 0)} kcal (Remaining: {remaining.get('calories', 0)} kcal)\n"
+        f"- Protein: Consumed {consumed.get('protein', 0)}g / Target {targets.get('protein', 0)}g (Remaining: {remaining.get('protein', 0)}g)\n"
+        f"- Carbs: Consumed {consumed.get('carbs', 0)}g / Target {targets.get('carbs', 0)}g (Remaining: {remaining.get('carbs', 0)}g)\n"
+        f"- Fat: Consumed {consumed.get('fat', 0)}g / Target {targets.get('fat', 0)}g (Remaining: {remaining.get('fat', 0)}g)\n"
+        f"- Fiber: Consumed {consumed.get('fiber', 0)}g / Target {targets.get('fiber', 0)}g (Remaining: {remaining.get('fiber', 0)}g)"
+    )
+
+@tool
+async def get_diet_recommendations(config: RunnableConfig = None) -> str:
+    """Retrieve personalized diet recommendations based on current goals and macro deficiencies."""
+    result = await _api_call("GET", "/api/nutrition/recommendations", None, config)
+    if isinstance(result, dict) and "success" in result and not result["success"]:
+        return f"Error: {result['error']}"
+
+    recs = result.get("recommendations", [])
+    if not recs:
+        return "No food recommendations available."
+
+    lines = ["Personalized Food Recommendations:"]
+    for category in recs:
+        lines.append(f"\n* {category.get('category')} (Reason: {category.get('reason')}):")
+        for food in category.get('foods', []):
+            lines.append(f"  - {food.get('name')}: {food.get('description')}")
+    return "\n".join(lines)
+
 @tool(args_schema=SearchMedicalInput)
 async def search_medical_report(query: str, config: RunnableConfig = None) -> str:
     """
@@ -563,5 +689,6 @@ ALL_HEALTH_TOOLS = [
     create_activity, update_activity, delete_activity, get_activities,
     create_goal, update_goal, delete_goal, get_goals,
     generate_weekly_summary, generate_monthly_summary,
-    search_medical_report
+    search_medical_report,
+    create_food_log, get_food_logs, delete_food_log, get_nutrition_summary, get_diet_recommendations
 ]

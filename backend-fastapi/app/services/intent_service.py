@@ -31,11 +31,11 @@ def classify_intent(message: str) -> Tuple[Intent, float]:
     system_prompt = (
         "You are an expert intent classifier for a health tracking assistant.\n"
         "Classify the user's input message into exactly one of the following intents:\n"
-        "- CREATE: Logging or recording new health metrics (e.g. water, weight, sleep, activity, goals).\n"
-        "- READ: Fetching, viewing, or querying history of logged metrics (e.g. 'how much water did I drink', 'show my sleep history').\n"
-        "- UPDATE: Editing, modifying, or changing existing logs or goals (e.g. 'update weight to 74kg', 'change yesterday's sleep').\n"
-        "- DELETE: Deleting or removing logs, records, or goals (e.g. 'delete today's water log').\n"
-        "- ANALYTICS: Asking for summaries, averages, trends, comparisons, or recommendations over time based on logs (e.g. 'How was my sleep last week?', 'Am I reaching my goals?', 'How has my weight changed?').\n"
+        "- CREATE: Logging or recording new health metrics (e.g. food, water, weight, sleep, activity, goals).\n"
+        "- READ: Fetching, viewing, or querying history of logged metrics (e.g. 'what did I eat today', 'how much protein did I eat today', 'how much water did I drink', 'show my sleep history').\n"
+        "- UPDATE: Editing, modifying, or changing existing logs or goals (e.g. 'update weight to 74kg', 'change yesterday's sleep', 'edit lunch').\n"
+        "- DELETE: Deleting or removing logs, records, or goals (e.g. 'delete today's water log', 'remove my dinner log').\n"
+        "- ANALYTICS: Asking for summaries, averages, trends, comparisons, or recommendations over time based on logs (e.g. 'How was my sleep last week?', 'Am I meeting my calorie goal?', 'How has my weight changed?', 'Suggest a high protein dinner').\n"
         "- RAG: Asking about uploaded medical report content (e.g. 'Summarize my blood report', 'What does cholesterol mean?').\n"
         "- HYBRID: Combining both medical report RAG and health metrics analysis (e.g. 'Based on my blood report and sleep history, what should I improve?', 'Compare my health data with my medical report').\n\n"
         "Return ONLY a valid JSON object with keys:\n"
@@ -65,19 +65,19 @@ def classify_intent(message: str) -> Tuple[Intent, float]:
         
     # Fallback to rules if Groq fails
     msg_lower = message.lower()
-    if any(kw in msg_lower for kw in ["delete", "remove", "discard", "clear record", "cancel goal"]):
+    if any(kw in msg_lower for kw in ["delete", "remove", "discard", "clear record", "cancel goal", "remove food", "delete meal"]):
         return Intent.DELETE, 0.8
     if any(kw in msg_lower for kw in ["update", "change", "modify", "edit"]):
         return Intent.UPDATE, 0.8
-    if any(kw in msg_lower for kw in ["log", "add", "record", "create", "set a goal"]):
+    if any(kw in msg_lower for kw in ["log", "add", "record", "create", "set a goal", "ate", "had", "drank", "eat", "drink", "logged"]):
         return Intent.CREATE, 0.8
     if any(kw in msg_lower for kw in ["report", "blood", "cholesterol", "lab", "pdf", "medical", "test"]):
-        if any(kw2 in msg_lower for kw2 in ["sleep", "weight", "water", "activity"]):
+        if any(kw2 in msg_lower for kw2 in ["sleep", "weight", "water", "activity", "food", "nutrition"]):
             return Intent.HYBRID, 0.8
         return Intent.RAG, 0.8
-    if any(kw in msg_lower for kw in ["how has", "trend", "improve", "average", "summary", "weekly", "monthly", "analytics"]):
+    if any(kw in msg_lower for kw in ["how has", "trend", "improve", "average", "summary", "weekly", "monthly", "analytics", "goal", "recommend", "suggest"]):
         return Intent.ANALYTICS, 0.8
-    if any(kw in msg_lower for kw in ["how much", "show", "history", "what is my", "get"]):
+    if any(kw in msg_lower for kw in ["how much", "show", "history", "what is my", "get", "what did i", "what did you"]):
         return Intent.READ, 0.7
         
     return Intent.READ, 0.5

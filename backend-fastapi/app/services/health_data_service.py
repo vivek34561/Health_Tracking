@@ -48,13 +48,15 @@ async def _fetch_all(client: httpx.AsyncClient, base_url: str, headers: dict) ->
             pass
         return []
 
-    weights, water, sleep, activities, goals, dashboard = await asyncio.gather(
+    weights, water, sleep, activities, goals, dashboard, nutrition_today, diet_goals = await asyncio.gather(
         safe_get(f"{base_url}/api/weights"),
         safe_get(f"{base_url}/api/water"),
         safe_get(f"{base_url}/api/sleep"),
         safe_get(f"{base_url}/api/activities"),
         safe_get(f"{base_url}/api/goals"),
         safe_get(f"{base_url}/api/dashboard"),
+        safe_get(f"{base_url}/api/nutrition/today"),
+        safe_get(f"{base_url}/api/diet/goals"),
     )
 
     return {
@@ -64,6 +66,8 @@ async def _fetch_all(client: httpx.AsyncClient, base_url: str, headers: dict) ->
         "activities": activities if isinstance(activities, list) else activities.get("data", []),
         "goals": goals if isinstance(goals, list) else goals.get("data", []),
         "dashboard": dashboard if isinstance(dashboard, dict) else {},
+        "nutrition_today": nutrition_today if isinstance(nutrition_today, dict) else {},
+        "diet_goals": diet_goals if isinstance(diet_goals, dict) else {},
     }
 
 
@@ -192,6 +196,8 @@ def _build_summary(data: dict) -> Dict[str, Any]:
             "details": goal_summaries,
         },
         "dashboard": dashboard,
+        "nutrition_today": data.get("nutrition_today", {}),
+        "diet_goals": data.get("diet_goals", {}),
         "generated_at": now.isoformat(),
     }
 
@@ -232,6 +238,20 @@ def format_summary_for_prompt(summary: Dict[str, Any]) -> str:
         lines.append(
             f"  - {gd['type']}: {gd['progress_pct']}% complete "
             f"({gd['current']}/{gd['target']} {gd['unit']})"
+        )
+
+    nut = summary.get("nutrition_today", {})
+    if nut and "consumed" in nut:
+        consumed = nut["consumed"]
+        targets = nut["targets"]
+        remaining = nut["remaining"]
+        lines.append(
+            f"Diet & Nutrition (Today):\n"
+            f"  - Calories: Consumed {consumed.get('calories', 0)} kcal / Goal {targets.get('calories', 0)} kcal (Remaining: {remaining.get('calories', 0)} kcal)\n"
+            f"  - Protein: Consumed {consumed.get('protein', 0)}g / Goal {targets.get('protein', 0)}g (Remaining: {remaining.get('protein', 0)}g)\n"
+            f"  - Carbs: Consumed {consumed.get('carbs', 0)}g / Goal {targets.get('carbs', 0)}g (Remaining: {remaining.get('carbs', 0)}g)\n"
+            f"  - Fat: Consumed {consumed.get('fat', 0)}g / Goal {targets.get('fat', 0)}g (Remaining: {remaining.get('fat', 0)}g)\n"
+            f"  - Fiber: Consumed {consumed.get('fiber', 0)}g / Goal {targets.get('fiber', 0)}g (Remaining: {remaining.get('fiber', 0)}g)"
         )
 
     lines.append("=========================")

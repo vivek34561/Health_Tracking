@@ -13,6 +13,7 @@ import { NotificationsComponent } from './features/notifications/notifications';
 import { ProfileComponent } from './features/profile/profile';
 import { SettingsComponent } from './features/settings/settings';
 import { BodyFatComponent } from './features/bodyfat/bodyfat';
+import { DietComponent } from './features/diet/diet';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -30,6 +31,7 @@ export const routes: Routes = [
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
   { path: 'bodyfat', component: BodyFatComponent, canActivate: [authGuard] },
+  { path: 'diet', component: DietComponent, canActivate: [authGuard] },
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: '/dashboard' }
 ];
