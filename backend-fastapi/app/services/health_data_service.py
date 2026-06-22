@@ -3,6 +3,20 @@ from app.core.config import get_settings
 from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
 import statistics
+from typing import Optional
+
+def to_local_datetime(date_str: str) -> Optional[datetime]:
+    if not date_str:
+        return None
+    try:
+        # Standardize ISO format for fromisoformat
+        clean_str = date_str.replace('Z', '+00:00')
+        dt = datetime.fromisoformat(clean_str)
+        if dt.tzinfo is not None:
+            return dt.astimezone()
+        return dt
+    except Exception:
+        return None
 
 
 async def fetch_health_data(jwt_token: str) -> Dict[str, Any]:
@@ -96,8 +110,10 @@ def _build_summary(data: dict) -> Dict[str, Any]:
     # Group by day and sum
     water_by_day: Dict[str, float] = {}
     for w in water_logs:
-        day = (w.get("consumedAt") or w.get("consumed_at") or "")[:10]
-        if day:
+        consumed_at_str = w.get("consumedAt") or w.get("consumed_at") or ""
+        dt = to_local_datetime(consumed_at_str)
+        if dt:
+            day = dt.strftime("%Y-%m-%d")
             try:
                 water_by_day[day] = water_by_day.get(day, 0) + float(w.get("amountMl") or w.get("amount_ml", 0))
             except (ValueError, TypeError):

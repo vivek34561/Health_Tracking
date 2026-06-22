@@ -7,6 +7,19 @@ import httpx
 from app.core.config import get_settings
 from app.services.rag_service import retrieve_relevant_chunks, format_rag_context
 
+def format_to_local_time(date_str: str, format_pattern: str = "%Y-%m-%d %H:%M") -> str:
+    if not date_str or date_str in ("Unknown Date", "Unknown"):
+        return date_str
+    try:
+        # Standardize ISO format for fromisoformat
+        clean_str = date_str.replace('Z', '+00:00')
+        dt = datetime.fromisoformat(clean_str)
+        if dt.tzinfo is not None:
+            dt = dt.astimezone()
+        return dt.strftime(format_pattern)
+    except Exception:
+        return date_str[:16].replace('T', ' ')
+
 # ==========================================
 # 1. PYDANTIC SCHEMAS (Validation Layer)
 # ==========================================
@@ -272,9 +285,9 @@ async def get_water_logs(config: RunnableConfig = None) -> str:
     
     lines = ["Here are your water intake logs:"]
     for item in result[:10]: # Return top 10 logs for context
-        date_str = item.get("recorded_at") or item.get("recordedAt") or "Unknown Date"
-        # format date for readability
-        lines.append(f"- ID: {item.get('id')} | Amount: {item.get('amount_ml') or item.get('amountMl')}ml | Date: {date_str[:16].replace('T', ' ')}")
+        date_str = item.get("consumed_at") or item.get("consumedAt") or item.get("recorded_at") or item.get("recordedAt") or "Unknown Date"
+        local_date = format_to_local_time(date_str)
+        lines.append(f"- ID: {item.get('id')} | Amount: {item.get('amount_ml') or item.get('amountMl')}ml | Date: {local_date}")
     return "\n".join(lines)
 
 
@@ -320,7 +333,8 @@ async def get_weight_history(config: RunnableConfig = None) -> str:
     lines = ["Here is your weight history:"]
     for item in result[:10]:
         date_str = item.get("recorded_at") or item.get("recordedAt") or "Unknown Date"
-        lines.append(f"- ID: {item.get('id')} | Weight: {item.get('weight')}kg | Date: {date_str[:10]}")
+        local_date = format_to_local_time(date_str, "%Y-%m-%d")
+        lines.append(f"- ID: {item.get('id')} | Weight: {item.get('weight')}kg | Date: {local_date}")
     return "\n".join(lines)
 
 
@@ -368,7 +382,9 @@ async def get_sleep_logs(config: RunnableConfig = None) -> str:
         total_hours = item.get("total_hours") or item.get("totalHours") or "Unknown"
         start_str = item.get("sleep_start") or item.get("sleepStart") or "Unknown"
         end_str = item.get("sleep_end") or item.get("sleepEnd") or "Unknown"
-        lines.append(f"- ID: {item.get('id')} | Sleep: {total_hours}h | Start: {start_str[:16].replace('T', ' ')} | End: {end_str[:16].replace('T', ' ')}")
+        local_start = format_to_local_time(start_str)
+        local_end = format_to_local_time(end_str)
+        lines.append(f"- ID: {item.get('id')} | Sleep: {total_hours}h | Start: {local_start} | End: {local_end}")
     return "\n".join(lines)
 
 
