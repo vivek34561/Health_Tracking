@@ -11,3 +11,4 @@ pydantic-settings>=2.7.0
 python-dotenv>=1.0.1
 numpy>=2.0.0
 langgraph>=0.1.0
+grandalf

@@ -64,6 +64,15 @@ async def agent_node(state: AgentState) -> Dict[str, Any]:
         "5. Never diagnose medical conditions. Refer to medical professionals if needed.\n\n"
     )
     
+    if state["intent"] == "GREETING":
+        system_prompt += (
+            "User has sent a simple greeting. Do NOT execute any tools or actions.\n"
+            "Do NOT reference previous conversation tasks like deletions or log updates.\n"
+            "Just reply with a friendly, supportive welcome greeting, introduce yourself as HealthAI, "
+            "and ask how you can help them track or analyze their health today.\n\n"
+        )
+
+    
     if context_parts:
         system_prompt += "\n".join(context_parts) + "\n\n"
         
@@ -265,6 +274,15 @@ workflow.add_conditional_edges(
 workflow.add_edge("tools", "agent")
 
 compiled_agent = workflow.compile()
+
+try:
+    print("\n--- LangGraph Workflow Architecture ---")
+    compiled_agent.get_graph().print_ascii()
+    print("---------------------------------------\n")
+except Exception as e:
+    print(f"Could not print LangGraph structure: {e}")
+
+
 
 # ==========================================
 # 6. EXECUTION HELPER

@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     express_api_url: str = "http://localhost:5000"
     chroma_persist_dir: str = "./chroma_db"
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
-    groq_model: str = "llama-3.3-70b-versatile"
+    groq_model: str = "openai/gpt-oss-20b"
     max_tokens: int = 1024
     chunk_size: int = 800
     chunk_overlap: int = 100

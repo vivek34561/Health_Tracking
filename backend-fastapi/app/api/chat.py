@@ -1,3 +1,4 @@
+# this chat.py is all about to call groq and execute the tools as well as the main entry point for the chat feature
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Optional, Any

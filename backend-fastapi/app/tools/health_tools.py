@@ -262,7 +262,7 @@ async def delete_water_log(record_id: int, config: RunnableConfig = None) -> str
     return f"Successfully deleted water log entry {record_id}."
 
 @tool
-async def get_water_logs(dummy: Optional[str] = None, config: RunnableConfig = None) -> str:
+async def get_water_logs(config: RunnableConfig = None) -> str:
     """Fetch the history of water intake logs for the user."""
     result = await _api_call("GET", "/api/water", None, config)
     if isinstance(result, dict) and "success" in result and not result["success"]:
@@ -309,7 +309,7 @@ async def delete_weight_log(record_id: int, config: RunnableConfig = None) -> st
     return f"Successfully deleted weight record {record_id}."
 
 @tool
-async def get_weight_history(dummy: Optional[str] = None, config: RunnableConfig = None) -> str:
+async def get_weight_history(config: RunnableConfig = None) -> str:
     """Retrieve weight history logs."""
     result = await _api_call("GET", "/api/weights", None, config)
     if isinstance(result, dict) and "success" in result and not result["success"]:
@@ -355,7 +355,7 @@ async def delete_sleep_log(record_id: int, config: RunnableConfig = None) -> str
     return f"Successfully deleted sleep record {record_id}."
 
 @tool
-async def get_sleep_logs(dummy: Optional[str] = None, config: RunnableConfig = None) -> str:
+async def get_sleep_logs(config: RunnableConfig = None) -> str:
     """Retrieve sleep history logs."""
     result = await _api_call("GET", "/api/sleep", None, config)
     if isinstance(result, dict) and "success" in result and not result["success"]:
@@ -413,7 +413,7 @@ async def delete_activity(record_id: int, config: RunnableConfig = None) -> str:
     return f"Successfully deleted activity log entry {record_id}."
 
 @tool
-async def get_activities(dummy: Optional[str] = None, config: RunnableConfig = None) -> str:
+async def get_activities(config: RunnableConfig = None) -> str:
     """Retrieve logged activities."""
     result = await _api_call("GET", "/api/activities", None, config)
     if isinstance(result, dict) and "success" in result and not result["success"]:
@@ -474,7 +474,7 @@ async def delete_goal(record_id: int, config: RunnableConfig = None) -> str:
     return f"Successfully deleted goal record {record_id}."
 
 @tool
-async def get_goals(dummy: Optional[str] = None, config: RunnableConfig = None) -> str:
+async def get_goals(config: RunnableConfig = None) -> str:
     """Retrieve all goals and their progress details."""
     result = await _api_call("GET", "/api/goals", None, config)
     if isinstance(result, dict) and "success" in result and not result["success"]:
@@ -493,7 +493,7 @@ async def get_goals(dummy: Optional[str] = None, config: RunnableConfig = None) 
 
 
 @tool
-async def generate_weekly_summary(dummy: Optional[str] = None, config: RunnableConfig = None) -> str:
+async def generate_weekly_summary(config: RunnableConfig = None) -> str:
     """Generate a weekly statistics summary of the user's logged health metrics."""
     result = await _api_call("GET", "/api/reports/weekly", None, config)
     if isinstance(result, dict) and "success" in result and not result["success"]:
@@ -509,7 +509,7 @@ async def generate_weekly_summary(dummy: Optional[str] = None, config: RunnableC
     )
 
 @tool
-async def generate_monthly_summary(dummy: Optional[str] = None, config: RunnableConfig = None) -> str:
+async def generate_monthly_summary(config: RunnableConfig = None) -> str:
     """Generate a monthly statistics summary of the user's logged health metrics."""
     result = await _api_call("GET", "/api/reports/monthly", None, config)
     if isinstance(result, dict) and "success" in result and not result["success"]:

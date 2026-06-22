@@ -12,13 +12,19 @@ class Intent(str, Enum):
     ANALYTICS = "ANALYTICS"
     RAG = "RAG"
     HYBRID = "HYBRID"
+    GREETING = "GREETING"
 
 def classify_intent(message: str) -> Tuple[Intent, float]:
     """
-    Classify the user's message intent into one of the 7 categories:
-    CREATE, READ, UPDATE, DELETE, ANALYTICS, RAG, HYBRID.
+    Classify the user's message intent into one of the categories:
+    CREATE, READ, UPDATE, DELETE, ANALYTICS, RAG, HYBRID, GREETING.
     Uses Groq JSON mode for structured classification, falling back to keywords if needed.
     """
+    # Fast path for simple greetings to prevent latency and history pollution issues
+    msg_clean = message.strip().lower().rstrip("?.!")
+    if msg_clean in ("hi", "hello", "hey", "greetings", "good morning", "good afternoon", "good evening"):
+        return Intent.GREETING, 1.0
+
     client = get_groq_client()
     settings = get_settings()
     
@@ -109,6 +115,12 @@ def get_system_prompt(intent: Intent, has_rag_data: bool = False) -> str:
             "You have access to both the user's health tracking data AND excerpts from their medical reports. "
             "Synthesize insights from both sources to provide comprehensive, personalized recommendations. "
             "Explain how their tracked health habits relate to their medical report findings."
+        )
+
+    elif intent == Intent.GREETING:
+        return base_persona + (
+            "The user is saying hello. Respond with a friendly, welcoming greeting. "
+            "Introduce yourself as HealthAI and ask how you can help them manage their health tracking or report analysis today."
         )
 
     else:
