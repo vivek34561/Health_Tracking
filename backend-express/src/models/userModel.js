@@ -26,7 +26,7 @@ async function createUser(name, email, passwordHash) {
 
     // Insert user
     const [userResult] = await connection.execute(
-      'INSERT INTO users (name, email, password_hash, status) VALUES (?, ?, ?, "ACTIVE")',
+      "INSERT INTO users (name, email, password_hash, status) VALUES (?, ?, ?, 'ACTIVE')",
       [name, email, passwordHash]
     );
 
