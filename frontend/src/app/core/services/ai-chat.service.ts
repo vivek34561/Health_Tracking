@@ -105,68 +105,7 @@ export class AiChatService {
       user_id: this.getUserId(),
     };
 
-    const token = this.authService.token() || localStorage.getItem('ht_token') || '';
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-
-    this.http.post<ChatResponse>(
-      `${this.GATEWAY_URL}/chat`,
-      request,
-      { headers }
-    ).pipe(
-      catchError(err => {
-        const errorMsg = err.status === 0
-          ? 'Cannot connect to AI service. Please make sure the backend is running.'
-          : `Error: ${err.error?.message || err.error?.detail || err.message || 'Something went wrong'}`;
-        return throwError(() => new Error(errorMsg));
-      })
-    ).subscribe({
-      next: (response: ChatResponse) => {
-        let messageIndex = -1;
-        // Replace loading message with actual response structure, empty content
-        this.messages.update(msgs => {
-          const updated = [...msgs];
-          const idx = updated.reduce((acc: number, m: ChatMessage, i: number) => m.isLoading ? i : acc, -1);
-          if (idx !== -1) {
-            updated[idx] = {
-              role: 'assistant',
-              content: '',
-              timestamp: new Date(),
-              intent: response.intent,
-              sources: response.sources_used,
-              confirmationRequired: response.confirmation_required,
-              confirmAction: response.confirm_action,
-            };
-            messageIndex = idx;
-          }
-          return updated;
-        });
-        this.isLoading.set(false);
-        if (!this.isOpen()) {
-          this.hasNewMessage.set(true);
-        }
-        
-        // Stream the text content word by word
-        if (messageIndex !== -1) {
-          this.streamMessage(response.reply, messageIndex);
-        }
-      },
-      error: (err: Error) => {
-        // Replace loading with error message
-        this.messages.update(msgs => {
-          const updated = [...msgs];
-          const idx = updated.reduce((acc: number, m: ChatMessage, i: number) => m.isLoading ? i : acc, -1);
-          if (idx !== -1) {
-            updated[idx] = {
-              role: 'assistant',
-              content: `⚠️ ${err.message}`,
-              timestamp: new Date(),
-            };
-          }
-          return updated;
-        });
-        this.isLoading.set(false);
-      }
-    });
+    this.executeChatStreamRequest(request);
   }
 
   confirmAction(action: { tool: string; id: number }): void {
@@ -203,58 +142,138 @@ export class AiChatService {
       confirmed_action: action
     };
 
-    const token = this.authService.token() || localStorage.getItem('ht_token') || '';
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    this.executeChatStreamRequest(request);
+  }
 
-    this.http.post<ChatResponse>(
-      `${this.GATEWAY_URL}/chat`,
-      request,
-      { headers }
-    ).pipe(
-      catchError(err => {
-        const errorMsg = `Error executing deletion: ${err.error?.message || err.message}`;
-        return throwError(() => new Error(errorMsg));
-      })
-    ).subscribe({
-      next: (response: ChatResponse) => {
-        let messageIndex = -1;
-        this.messages.update(msgs => {
-          const updated = [...msgs];
-          const idx = updated.reduce((acc: number, m: ChatMessage, i: number) => m.isLoading ? i : acc, -1);
-          if (idx !== -1) {
-            updated[idx] = {
-              role: 'assistant',
-              content: '',
-              timestamp: new Date(),
-              intent: response.intent,
-              sources: response.sources_used
-            };
-            messageIndex = idx;
-          }
-          return updated;
-        });
-        this.isLoading.set(false);
-        
-        if (messageIndex !== -1) {
-          this.streamMessage(response.reply, messageIndex);
-        }
-      },
-      error: (err: Error) => {
-        this.messages.update(msgs => {
-          const updated = [...msgs];
-          const idx = updated.reduce((acc: number, m: ChatMessage, i: number) => m.isLoading ? i : acc, -1);
-          if (idx !== -1) {
-            updated[idx] = {
-              role: 'assistant',
-              content: `⚠️ ${err.message}`,
-              timestamp: new Date()
-            };
-          }
-          return updated;
-        });
-        this.isLoading.set(false);
+  private async executeChatStreamRequest(request: ChatRequest): Promise<void> {
+    const token = this.authService.token() || localStorage.getItem('ht_token') || '';
+    
+    try {
+      const response = await fetch(`${this.GATEWAY_URL}/chat/stream`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(request)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned status ${response.status}`);
       }
-    });
+
+      if (!response.body) {
+        throw new Error('ReadableStream not supported on response.');
+      }
+
+      let messageIndex = -1;
+      this.messages.update(msgs => {
+        const updated = [...msgs];
+        const idx = updated.reduce((acc: number, m: ChatMessage, i: number) => m.isLoading ? i : acc, -1);
+        if (idx !== -1) {
+          updated[idx] = {
+            role: 'assistant',
+            content: '',
+            timestamp: new Date(),
+            isLoading: false
+          };
+          messageIndex = idx;
+        }
+        return updated;
+      });
+      this.isLoading.set(false);
+
+      if (!this.isOpen()) {
+        this.hasNewMessage.set(true);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let currentContent = '';
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n\n');
+        buffer = lines.pop() || '';
+
+        for (const chunk of lines) {
+          if (!chunk.trim()) continue;
+
+          const eventMatch = chunk.match(/^event:\s*(.+)$/m);
+          const dataMatch = chunk.match(/^data:\s*(.+)$/m);
+
+          const eventName = eventMatch ? eventMatch[1].trim() : '';
+          const dataContent = dataMatch ? dataMatch[1].trim() : '';
+
+          if (eventName === 'token') {
+            currentContent += dataContent;
+            this.messages.update(msgs => {
+              const updated = [...msgs];
+              if (updated[messageIndex]) {
+                updated[messageIndex] = {
+                  ...updated[messageIndex],
+                  content: currentContent
+                };
+              }
+              return updated;
+            });
+          } 
+          else if (eventName === 'metadata') {
+            try {
+              const metadata = JSON.parse(dataContent);
+              this.messages.update(msgs => {
+                const updated = [...msgs];
+                if (updated[messageIndex]) {
+                  updated[messageIndex] = {
+                    ...updated[messageIndex],
+                    content: metadata.reply || updated[messageIndex].content,
+                    intent: metadata.intent,
+                    sources: metadata.sources_used,
+                    confirmationRequired: metadata.confirmation_required,
+                    confirmAction: metadata.confirm_action
+                  };
+                }
+                return updated;
+              });
+            } catch (e) {
+              console.error('Failed to parse metadata chunk:', e);
+            }
+          }
+          else if (eventName === 'error') {
+            this.messages.update(msgs => {
+              const updated = [...msgs];
+              if (updated[messageIndex]) {
+                updated[messageIndex] = {
+                  ...updated[messageIndex],
+                  content: `⚠️ Error: ${dataContent}`
+                };
+              }
+              return updated;
+            });
+          }
+        }
+      }
+
+    } catch (err: any) {
+      console.error('Streaming connection error:', err);
+      this.messages.update(msgs => {
+        const updated = [...msgs];
+        const idx = updated.reduce((acc: number, m: ChatMessage, i: number) => m.isLoading ? i : acc, -1);
+        if (idx !== -1) {
+          updated[idx] = {
+            role: 'assistant',
+            content: `⚠️ Cannot connect to AI service. Please make sure the backend is running.`,
+            timestamp: new Date()
+          };
+        }
+        return updated;
+      });
+      this.isLoading.set(false);
+    }
   }
 
   cancelAction(): void {
@@ -296,31 +315,6 @@ export class AiChatService {
     if (this.isOpen()) {
       this.hasNewMessage.set(false);
     }
-  }
-
-  private streamMessage(reply: string, index: number): void {
-    const words = reply.split(' ');
-    let currentText = '';
-    let wordIndex = 0;
-
-    const timer = setInterval(() => {
-      if (wordIndex < words.length) {
-        currentText += (wordIndex === 0 ? '' : ' ') + words[wordIndex];
-        this.messages.update(msgs => {
-          const updated = [...msgs];
-          if (updated[index]) {
-            updated[index] = {
-              ...updated[index],
-              content: currentText
-            };
-          }
-          return updated;
-        });
-        wordIndex++;
-      } else {
-        clearInterval(timer);
-      }
-    }, 35);
   }
 
   clearHistory(): void {

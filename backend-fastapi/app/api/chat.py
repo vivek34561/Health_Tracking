@@ -1,9 +1,11 @@
 # this chat.py is all about to call groq and execute the tools as well as the main entry point for the chat feature
+import json
 from fastapi import APIRouter, Header, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Dict, Optional, Any
 from app.services.intent_service import classify_intent, Intent
-from app.services.agent_service import run_agent
+from app.services.agent_service import run_agent, run_agent_stream
 from app.tools.health_tools import (
     delete_water_log,
     delete_weight_log,
@@ -136,4 +138,90 @@ async def chat(
         confirmation_required=agent_result["confirmation_required"],
         confirm_action=agent_result["confirm_action"],
         structured_data=agent_result["structured_data"]
+    )
+
+
+@router.post("/chat/stream")
+async def chat_stream(
+    request: ChatRequest,
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Streaming AI Health Agent endpoint.
+    Yields chunks as they are generated and final metadata at the end.
+    """
+    message = request.message.strip()
+    if not message and not request.confirmed_action:
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+
+    # Extract JWT token
+    jwt_token = None
+    if authorization and authorization.startswith("Bearer "):
+        jwt_token = authorization.split(" ", 1)[1]
+
+    user_id = request.user_id or 0
+
+    # 1. Handle confirmed delete actions immediately (bulletproof bypass)
+    if request.confirmed_action:
+        async def confirm_action_generator():
+            action = request.confirmed_action
+            config = {"configurable": {"jwt_token": jwt_token, "user_id": user_id}}
+            
+            tool_map = {
+                "delete_water_log": delete_water_log,
+                "delete_weight_log": delete_weight_log,
+                "delete_sleep_log": delete_sleep_log,
+                "delete_activity": delete_activity,
+                "delete_goal": delete_goal,
+                "delete_food_log": delete_food_log
+            }
+            
+            tool = tool_map.get(action.tool)
+            if not tool:
+                yield f"event: error\ndata: Unsupported confirm action tool {action.tool}\n\n"
+                return
+                
+            try:
+                result = await tool.ainvoke({"record_id": action.id}, config=config)
+                entity = action.tool.replace("delete_", "").replace("_log", "")
+                
+                metadata = {
+                    "reply": str(result),
+                    "intent": "DELETE",
+                    "sources_used": [],
+                    "confirmation_required": False,
+                    "confirm_action": None,
+                    "structured_data": {
+                        "intent": "DELETE",
+                        "entity": entity,
+                        "id": action.id,
+                        "status": "success"
+                    }
+                }
+                yield f"event: token\ndata: {str(result)}\n\n"
+                yield f"event: metadata\ndata: {json.dumps(metadata)}\n\n"
+            except Exception as e:
+                yield f"event: error\ndata: Tool execution failed: {str(e)}\n\n"
+
+        return StreamingResponse(confirm_action_generator(), media_type="text/event-stream")
+
+    # 2. Classify intent
+    intent, confidence = classify_intent(message)
+
+    # 3. Format history for LangGraph run_agent_stream
+    history = []
+    if request.conversation_history:
+        for msg in request.conversation_history:
+            history.append({"role": msg.role, "content": msg.content})
+
+    # 4. Return StreamingResponse
+    return StreamingResponse(
+        run_agent_stream(
+            message=message,
+            history=history,
+            user_id=user_id,
+            jwt_token=jwt_token or "",
+            intent=intent.value
+        ),
+        media_type="text/event-stream"
     )

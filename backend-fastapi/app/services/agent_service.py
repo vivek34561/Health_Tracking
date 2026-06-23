@@ -273,7 +273,7 @@ async def run_agent(
     jwt_token: str,
     intent: str
 ) -> Dict[str, Any]:
-    """Execute the LangGraph workflow and return the output state."""
+    """Execute the LangGraph workflow and return the final state."""
     
     # Reconstruct message history
     formatted_messages = []
@@ -318,3 +318,76 @@ async def run_agent(
         "structured_data": final_state.get("structured_data"),
         "sources_used": final_state.get("sources_used", [])
     }
+
+
+async def run_agent_stream(
+    message: str,
+    history: List[Dict[str, str]],
+    user_id: int,
+    jwt_token: str,
+    intent: str
+):
+    """Execute the LangGraph workflow and yield token events and final metadata."""
+    
+    # Reconstruct message history
+    formatted_messages = []
+    for msg in history:
+        role = msg.get("role")
+        content = msg.get("content", "")
+        if role == "user":
+            formatted_messages.append(HumanMessage(content=content))
+        elif role == "assistant":
+            formatted_messages.append(AIMessage(content=content))
+            
+    # Add latest user message
+    formatted_messages.append(HumanMessage(content=message))
+    
+    # Initialize state
+    initial_state: AgentState = {
+        "messages": formatted_messages,
+        "user_id": user_id,
+        "jwt_token": jwt_token,
+        "intent": intent,
+        "confirmation_required": False,
+        "confirm_action": None,
+        "reply": None,
+        "structured_data": None,
+        "sources_used": []
+    }
+    
+    final_state = None
+    
+    # Use astream_events (v2) to capture real-time tokens as they generate
+    async for event in compiled_agent.astream_events(initial_state, version="v2"):
+        kind = event.get("event")
+        
+        # 1. Stream the text tokens
+        if kind == "on_chat_model_stream":
+            chunk = event.get("data", {}).get("chunk")
+            if chunk and hasattr(chunk, "content") and chunk.content:
+                # Do not stream tool execution chunks
+                if not getattr(chunk, "tool_call_chunks", None):
+                    yield f"event: token\ndata: {chunk.content}\n\n"
+                    
+        # 2. Capture the final Graph output state
+        elif kind == "on_chain_end":
+            output = event.get("data", {}).get("output")
+            if isinstance(output, dict) and "messages" in output:
+                final_state = output
+                
+    # 3. Yield the final metadata payload
+    if final_state:
+        reply = final_state.get("reply")
+        if not reply and final_state.get("messages"):
+            last_msg = final_state["messages"][-1]
+            reply = last_msg.content if hasattr(last_msg, "content") else str(last_msg)
+            
+        metadata = {
+            "reply": reply,
+            "intent": final_state.get("intent"),
+            "confirmation_required": final_state.get("confirmation_required", False),
+            "confirm_action": final_state.get("confirm_action"),
+            "structured_data": final_state.get("structured_data"),
+            "sources_used": final_state.get("sources_used", [])
+        }
+        yield f"event: metadata\ndata: {json.dumps(metadata)}\n\n"
