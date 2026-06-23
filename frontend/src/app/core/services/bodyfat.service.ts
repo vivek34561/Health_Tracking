@@ -32,7 +32,7 @@ export interface BodyFatResponse {
 })
 export class BodyFatService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:5000/api/ai/predict-bodyfat';
+  private readonly baseUrl = 'https://health-tracking-1-ji8x.onrender.com/api/ai/predict-bodyfat';
 
   /**
    * Predict body fat percentage based on body measurements

@@ -15,7 +15,7 @@ export interface SleepRecord {
 })
 export class SleepService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:5000/api/sleep';
+  private readonly baseUrl = 'https://health-tracking-1-ji8x.onrender.com/api/sleep';
 
   /**
    * Get sleep logs history

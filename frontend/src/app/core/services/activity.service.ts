@@ -16,7 +16,7 @@ export interface ActivityRecord {
 })
 export class ActivityService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:5000/api/activities';
+  private readonly baseUrl = 'https://health-tracking-1-ji8x.onrender.com/api/activities';
 
   /**
    * Get activity logs history

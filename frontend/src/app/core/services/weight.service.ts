@@ -13,7 +13,7 @@ export interface WeightRecord {
 })
 export class WeightService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:5000/api/weights';
+  private readonly baseUrl = 'https://health-tracking-1-ji8x.onrender.com/api/weights';
 
   /**
    * Get weight history logs

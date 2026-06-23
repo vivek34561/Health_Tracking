@@ -13,7 +13,7 @@ export interface WaterRecord {
 })
 export class WaterService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:5000/api/water';
+  private readonly baseUrl = 'https://health-tracking-1-ji8x.onrender.com/api/water';
 
   /**
    * Get water logs history

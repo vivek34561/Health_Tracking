@@ -61,7 +61,7 @@ export class SettingsComponent {
 
   private checkBackendStatus(): void {
     this.backendStatus.set('checking');
-    fetch('http://localhost:5000/api/health', { signal: AbortSignal.timeout(5000) })
+    fetch('https://health-tracking-1-ji8x.onrender.com/api/health', { signal: AbortSignal.timeout(5000) })
       .then(r => this.backendStatus.set(r.ok ? 'online' : 'offline'))
       .catch(() => this.backendStatus.set('offline'));
   }

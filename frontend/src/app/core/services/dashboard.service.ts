@@ -18,7 +18,7 @@ export interface DashboardSummary {
 })
 export class DashboardService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:5000/api/dashboard';
+  private readonly baseUrl = 'https://health-tracking-1-ji8x.onrender.com/api/dashboard';
 
   /**
    * Get today's dashboard summary

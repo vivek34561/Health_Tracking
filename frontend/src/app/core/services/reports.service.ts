@@ -45,7 +45,7 @@ export interface ProgressReport {
 })
 export class ReportsService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:5000/api/reports';
+  private readonly baseUrl = 'https://health-tracking-1-ji8x.onrender.com/api/reports';
 
   getWeeklyReport(): Observable<WeeklyReport> {
     return this.http.get<WeeklyReport>(`${this.baseUrl}/weekly`);

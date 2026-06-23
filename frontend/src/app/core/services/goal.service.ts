@@ -17,7 +17,7 @@ export interface GoalRecord {
 })
 export class GoalService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:5000/api/goals';
+  private readonly baseUrl = 'https://health-tracking-1-ji8x.onrender.com/api/goals';
 
   /**
    * Get active and historical goals

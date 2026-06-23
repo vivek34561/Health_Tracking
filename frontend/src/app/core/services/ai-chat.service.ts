@@ -45,8 +45,8 @@ export class AiChatService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
 
-  private readonly GATEWAY_URL = 'http://localhost:5000/api/ai';
-  private readonly FASTAPI_URL = 'http://localhost:8000';
+  private readonly GATEWAY_URL = 'https://health-tracking-1-ji8x.onrender.com/api/ai';
+  private readonly FASTAPI_URL = 'https://health-backend-fastapi.onrender.com';
 
   readonly messages = signal<ChatMessage[]>([
     {

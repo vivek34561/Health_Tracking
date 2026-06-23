@@ -85,7 +85,7 @@ export interface RecommendationResponse {
 })
 export class DietService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:5000/api';
+  private readonly baseUrl = 'https://health-tracking-1-ji8x.onrender.com/api';
 
   // --- Food Logging ---
   addFood(food: FoodRecord): Observable<any> {

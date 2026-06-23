@@ -10,7 +10,7 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
 
-  private readonly baseUrl = 'http://localhost:5000/api/auth';
+  private readonly baseUrl = 'https://health-tracking-1-ji8x.onrender.com/api/auth';
 
   // Signals for responsive state management
   readonly currentUser = signal<any>(null);
