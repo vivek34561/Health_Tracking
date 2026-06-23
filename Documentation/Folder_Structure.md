@@ -11,7 +11,8 @@ Health_Tracking_app/
 ├── .gitignore
 ├── Readme.md
 ├── db/                                # Database Scripts & Migrations
-│   └── schema.sql                     # Production MySQL Database Schema
+│   ├── schema.sql                     # Production MySQL Database Schema
+│   └── migration_diet.sql             # SQL Script for Food & Diet Tables
 ├── Documentation/                     # Project Specifications & Documentation
 │   ├── API_Documentation.md           # API Endpoints & Request/Response Contracts
 │   ├── database _design.md            # ERD & Table Specifications
@@ -87,22 +88,24 @@ Following Angular's best practice folder structure for scalability and maintaina
 Handles client authentication, business logic, MySQL database operations, and proxying requests to the AI services.
 
 - **`config/`**: Manages environment variables, MySQL pool connections, and JWT validation settings.
-- **`controllers/`**: Executes business rules, calls the model layer, and returns response objects.
+- **`controllers/`**: Executes business rules, calls the model layer, and returns response objects (e.g. `foodController.js`, `dietGoalController.js`).
 - **`middlewares/`**: Filters incoming requests (e.g., `authMiddleware.js` for JWT checks, `validationMiddleware.js` for payload sanitation, `errorHandler.js` for standard error envelopes).
-- **`models/`**: Executes SQL queries directly against MySQL. Standardized CRUD helpers to keep queries separate from controllers.
-- **`routes/`**: Connects HTTP routes (e.g., `POST /auth/register`) with their corresponding controller handlers.
+- **`models/`**: Executes SQL queries directly against MySQL. Standardized CRUD helpers to keep queries separate from controllers (e.g. `foodModel.js`, `dietGoalModel.js`).
+- **`routes/`**: Connects HTTP routes (e.g., `POST /auth/register`, `POST /api/foods`, `GET /api/nutrition/today`) with their corresponding controller handlers.
 
 ---
 
 ### D. Backend FastAPI (`/backend-fastapi`) — FastAPI
 Dedicated microservice for heavy AI workflows, LLM prompt engineering, Retrieval-Augmented Generation (RAG), and PDF extraction.
 
-- **`api/`**: Endpoints map to AI functionalities (`/ai/chat`, `/ai/recommendations`, `/ai/weekly-summary`, `/ai/upload-report`, `/ai/report-chat`).
+- **`api/`**: Endpoints map to AI/ML functionalities (`/api/chat`, `/api/upload-report`, `/api/health-summary`, `/api/predict-bodyfat`).
 - **`core/`**: Central configuration using `pydantic-settings` to handle OpenAI/Claude keys, Vector DB hosts, and environment checks.
 - **`services/`**:
-  - `llm_service.py`: Generative prompts and chatbot state management.
-  - `vector_service.py`: Integrates Chroma DB, saves and queries medical document chunks.
-  - `rag_service.py`: Integrates historical user data with LLM memory context.
+  - `agent_service.py`: LangGraph state machine orchestrating AI agent and tool-calling workflow.
+  - `groq_service.py`: Client wrapper for invoking the Groq LLM API.
+  - `health_data_service.py`: Concurrently fetches and formats the user's complete health tracking profile from the Express backend as prompt context.
+  - `intent_service.py`: Classifies incoming user queries into intent categories (READ, CREATE, UPDATE, DELETE, etc.).
+  - `rag_service.py`: Handles vector storage (ChromaDB) and retrieval for uploaded medical PDF documents.
 - **`utils/`**: Functions for parsing medical PDF uploads and chunking text.
 
 ---

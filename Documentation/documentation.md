@@ -209,13 +209,56 @@ DELETE /api/goals/:id
 
 Dashboard provides a single health overview screen.
 
+---
 
+## 10. Food & Nutrition Module
 
+### Features
 
+Users can track food intake, manage custom diet goals, view macro summaries, and receive tailored dietary suggestions.
+
+### Data Captured
+
+* Food Name
+* Quantity & Unit (grams, pieces, cups, ml)
+* Meal Type (Breakfast, Lunch, Dinner, Snacks)
+* Calories (kcal)
+* Macronutrients (Protein, Carbs, Fat, Fiber in grams)
+
+### Diet Goals
+
+* Goal Type (Weight Loss, Weight Gain, Muscle Gain, Maintenance)
+* Calorie and Macro Targets
+
+### APIs
+
+POST /api/foods
+
+GET /api/foods
+
+PUT /api/foods/:id
+
+DELETE /api/foods/:id
+
+GET /api/foods/search
+
+GET /api/diet/goals
+
+PUT /api/diet/goals
+
+GET /api/nutrition/today
+
+GET /api/nutrition/week
+
+GET /api/nutrition/month
+
+GET /api/nutrition/recommendations
+
+---
 
 # Phase 2: Analytics & Reporting
 
-## 10. Charts Module
+## 11. Charts Module
 
 ### Supported Charts
 
@@ -232,7 +275,7 @@ Dashboard provides a single health overview screen.
 
 ---
 
-## 11. Reports Module
+## 12. Reports Module
 
 ### Weekly Report
 
@@ -253,7 +296,7 @@ Contains:
 
 ---
 
-## 12. Notification Module
+## 13. Notification Module
 
 ### Notification Types
 
@@ -272,7 +315,7 @@ Contains:
 
 # Phase 3: AI Features
 
-## 13. AI Health Coach
+## 14. AI Health Coach
 
 ### Description
 
@@ -286,11 +329,11 @@ An AI chatbot that answers health-related questions based on user history.
 
 ### Flow
 
-User → Angular → Express → FastAPI → LLM
+User → Angular → Express → FastAPI (LangGraph & health tools) → LLM (Groq)
 
 ---
 
-## 14. Personalized Suggestions
+## 15. Personalized Suggestions
 
 ### Inputs
 
@@ -312,7 +355,7 @@ Example:
 
 ---
 
-## 15. Weekly AI Health Summary
+## 16. Weekly AI Health Summary
 
 ### Generated Automatically
 
@@ -337,18 +380,16 @@ Increase water intake by 500 ml/day.
 
 ---
 
-## 16. Future RAG Module
+## 17. Medical Report RAG Module
 
 ### Knowledge Sources
 
-* Nutrition Articles
-* Exercise Guides
+* Uploaded Medical Reports (PDFs)
 * User Historical Data
-* Uploaded Medical Reports
 
 ### Features
 
-* Report Analysis
+* Report Analysis & Semantic Querying
 * Health Q&A
 * Personalized Health Education
 

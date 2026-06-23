@@ -36,6 +36,10 @@ Users (1) ------ (N) UploadedDocuments
 
 Users (1) ------ (N) ChatHistory
 
+Users (1) ------ (N) FoodLogs
+
+Users (1) ------ (1) DietGoals
+
 UploadedDocuments (1) ------ (N) DocumentChunks
 
 ---
@@ -54,7 +58,9 @@ Users
 ├── WeeklyReports (1:N)
 ├── AISummaries (1:N)
 ├── UploadedDocuments (1:N)
-└── ChatHistory (1:N)
+├── ChatHistory (1:N)
+├── FoodLogs (1:N)
+└── DietGoals (1:1)
 
 UploadedDocuments
 |
@@ -463,6 +469,112 @@ Indexes:
 INDEX(user_id)
 
 INDEX(created_at)
+
+---
+
+TABLE: foods
+
+Purpose:
+Stores user food consumption logs, including macronutrient breakdowns.
+
+Columns:
+
+id BIGINT PK AUTO_INCREMENT
+
+user_id BIGINT FK
+
+food_name VARCHAR(255) NOT NULL
+
+quantity DECIMAL(8,2) NOT NULL
+
+unit VARCHAR(50) NOT NULL
+
+calories DECIMAL(8,2) NOT NULL
+
+protein DECIMAL(8,2) NOT NULL
+
+carbs DECIMAL(8,2) NOT NULL
+
+fat DECIMAL(8,2) NOT NULL
+
+fiber DECIMAL(8,2) NOT NULL
+
+meal_type ENUM('BREAKFAST', 'LUNCH', 'DINNER', 'SNACKS') NOT NULL
+
+created_at TIMESTAMP
+
+Indexes:
+
+PRIMARY KEY(id)
+
+INDEX(user_id)
+
+INDEX(created_at)
+
+Foreign Keys:
+
+user_id REFERENCES users(id) ON DELETE CASCADE
+
+Constraints:
+
+quantity >= 0.00
+
+calories >= 0.00
+
+protein >= 0.00
+
+carbs >= 0.00
+
+fat >= 0.00
+
+fiber >= 0.00
+
+---
+
+TABLE: diet_goals
+
+Purpose:
+Stores daily calorie and macronutrient targets for a user.
+
+Columns:
+
+id BIGINT PK AUTO_INCREMENT
+
+user_id BIGINT FK UNIQUE
+
+goal_type ENUM('WEIGHT_LOSS', 'WEIGHT_GAIN', 'MUSCLE_GAIN', 'MAINTENANCE') NOT NULL
+
+target_calories INT NOT NULL
+
+target_protein INT NOT NULL
+
+target_carbs INT NOT NULL
+
+target_fat INT NOT NULL
+
+created_at TIMESTAMP
+
+updated_at TIMESTAMP
+
+Indexes:
+
+PRIMARY KEY(id)
+
+UNIQUE(user_id)
+
+Foreign Keys:
+
+user_id REFERENCES users(id) ON DELETE CASCADE
+
+Constraints:
+
+target_calories > 0
+
+target_protein >= 0
+
+target_carbs >= 0
+
+target_fat >= 0
 
 ---
 
