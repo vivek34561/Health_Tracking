@@ -122,12 +122,20 @@ async function login(req, res) {
       { expiresIn: jwtExpiry }
     );
 
+    // Get user profile details to include in the login response
+    const profile = await userModel.getProfile(user.id);
+
     return res.status(200).json({
       token,
       user: {
         id: user.id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        age: profile ? profile.age : null,
+        height: profile && profile.height ? parseFloat(profile.height) : null,
+        weight: profile && profile.weight ? parseFloat(profile.weight) : null,
+        gender: profile ? toTitleCase(profile.gender) : null,
+        activityLevel: profile ? toTitleCase(profile.activityLevel) : null
       }
     });
   } catch (error) {

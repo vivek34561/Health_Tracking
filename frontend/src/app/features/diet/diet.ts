@@ -36,12 +36,12 @@ export class DietComponent implements OnInit, OnDestroy {
   readonly foodsList = signal<FoodRecord[]>([]);
   readonly historyFoods = signal<FoodRecord[]>([]);
   readonly recommendations = signal<RecommendationCategory[]>([]);
-  
+
   readonly searchResults = signal<any[]>([]);
   readonly isLoading = signal(false);
   readonly isSubmitting = signal(false);
   readonly isSearching = signal(false);
-  
+
   // Date Filters
   readonly todayDate = new Date().toLocaleDateString('en-CA');
   readonly historyFilterDate = signal<string>(this.todayDate);
@@ -193,7 +193,7 @@ export class DietComponent implements OnInit, OnDestroy {
     this.dietService.getDietGoals().subscribe({
       next: (goal) => {
         this.currentGoal.set(goal);
-        
+
         // Sync goalForm targets
         this.goalForm.patchValue({
           goal_type: goal.goal_type,
@@ -214,7 +214,7 @@ export class DietComponent implements OnInit, OnDestroy {
             activityLevel: (user.activityLevel || 'MEDIUM').toUpperCase()
           });
         }
-        
+
         this.isLoading.set(false);
       },
       error: () => {
@@ -313,7 +313,7 @@ export class DietComponent implements OnInit, OnDestroy {
 
     this.isSubmitting.set(true);
     const formVal = this.foodForm.value;
-    
+
     // Construct record payload
     const record: FoodRecord = {
       food_name: formVal.food_name!,
@@ -358,7 +358,7 @@ export class DietComponent implements OnInit, OnDestroy {
   editRecord(record: FoodRecord): void {
     this.isEditMode.set(true);
     this.editingRecordId.set(record.id || null);
-    
+
     // Map record to form values
     const dateLocal = record.created_at ? new Date(record.created_at).toISOString().substring(0, 16) : new Date().toISOString().substring(0, 16);
     this.foodForm.patchValue({

@@ -5,522 +5,500 @@
       <h1 class="page-title">Diet & Nutrition Tracker</h1>
       <p class="page-subtitle">Track your meals, calculate caloric requirements, and get AI coaching insights.</p>
     </div>
-    
+
     <!-- Tab Controls -->
     <div class="header-actions">
       <div class="tab-group">
         <button class="tab-btn" [class.active]="activeTab() === 'log'" (click)="setTab('log')">🥗 Meal Logging</button>
-        <button class="tab-btn" [class.active]="activeTab() === 'history'" (click)="setTab('history')">📅 History Logs</button>
-        <button class="tab-btn" [class.active]="activeTab() === 'goals'" (click)="setTab('goals')">🎯 Target Goals</button>
-        <button class="tab-btn" [class.active]="activeTab() === 'analytics'" (click)="setTab('analytics')">📊 Analytics</button>
-        <button class="tab-btn" [class.active]="activeTab() === 'recommendations'" (click)="setTab('recommendations')">💡 Recommendations</button>
+        <button class="tab-btn" [class.active]="activeTab() === 'history'" (click)="setTab('history')">📅 History
+          Logs</button>
+        <button class="tab-btn" [class.active]="activeTab() === 'goals'" (click)="setTab('goals')">🎯 Target
+          Goals</button>
+        <button class="tab-btn" [class.active]="activeTab() === 'analytics'" (click)="setTab('analytics')">📊
+          Analytics</button>
+        <button class="tab-btn" [class.active]="activeTab() === 'recommendations'"
+          (click)="setTab('recommendations')">💡 Recommendations</button>
       </div>
     </div>
   </div>
 
   @if (isLoading() && activeTab() !== 'analytics') {
-    <div class="loader-container">
-      <div class="spinner"></div>
-      <p>Loading your diet profile...</p>
-    </div>
+  <div class="loader-container">
+    <div class="spinner"></div>
+    <p>Loading your diet profile...</p>
+  </div>
   }
 
   <!-- TAB 1: MEAL LOGGING & SUMMARY -->
   @if (activeTab() === 'log' && !isLoading()) {
-    <!-- Today's Nutrition Progress Cards -->
-    <div class="nutrition-summary-grid">
-      <!-- Calories progress -->
-      <div class="progress-card highlight-card">
-        <div class="progress-card-header">
-          <span class="icon-label">🔥 Calories</span>
-          <span class="pct-badge">{{ macroPercentages().calories }}%</span>
-        </div>
-        <div class="progress-card-value">
-          {{ todaySummary()?.consumed?.calories || 0 | number:'1.0-0' }} <span class="unit-label">/ {{ todaySummary()?.targets?.calories || 2000 }} kcal</span>
-        </div>
-        <div class="progress-bar-container">
-          <div class="progress-bar bar-calories" [style.width.%]="macroPercentages().calories"></div>
-        </div>
-        <div class="progress-card-footer">
-          Remaining: <strong>{{ todaySummary()?.remaining?.calories || 0 | number:'1.0-0' }} kcal</strong>
-        </div>
+  <!-- Today's Nutrition Progress Cards -->
+  <div class="nutrition-summary-grid">
+    <!-- Calories progress -->
+    <div class="progress-card highlight-card">
+      <div class="progress-card-header">
+        <span class="icon-label">🔥 Calories</span>
+        <span class="pct-badge">{{ macroPercentages().calories }}%</span>
       </div>
-
-      <!-- Protein progress -->
-      <div class="progress-card">
-        <div class="progress-card-header">
-          <span class="icon-label">🥩 Protein</span>
-          <span class="pct-badge bg-protein">{{ macroPercentages().protein }}%</span>
-        </div>
-        <div class="progress-card-value">
-          {{ todaySummary()?.consumed?.protein || 0 | number:'1.0-1' }}g <span class="unit-label">/ {{ todaySummary()?.targets?.protein || 120 }}g</span>
-        </div>
-        <div class="progress-bar-container">
-          <div class="progress-bar bar-protein" [style.width.%]="macroPercentages().protein"></div>
-        </div>
-        <div class="progress-card-footer">
-          Remaining: <strong>{{ todaySummary()?.remaining?.protein || 0 | number:'1.0-1' }}g</strong>
-        </div>
+      <div class="progress-card-value">
+        {{ todaySummary()?.consumed?.calories || 0 | number:'1.0-0' }} <span class="unit-label">/ {{
+          todaySummary()?.targets?.calories || 2000 }} kcal</span>
       </div>
-
-      <!-- Carbohydrates progress -->
-      <div class="progress-card">
-        <div class="progress-card-header">
-          <span class="icon-label">🌾 Carbohydrates</span>
-          <span class="pct-badge bg-carbs">{{ macroPercentages().carbs }}%</span>
-        </div>
-        <div class="progress-card-value">
-          {{ todaySummary()?.consumed?.carbs || 0 | number:'1.0-1' }}g <span class="unit-label">/ {{ todaySummary()?.targets?.carbs || 230 }}g</span>
-        </div>
-        <div class="progress-bar-container">
-          <div class="progress-bar bar-carbs" [style.width.%]="macroPercentages().carbs"></div>
-        </div>
-        <div class="progress-card-footer">
-          Remaining: <strong>{{ todaySummary()?.remaining?.carbs || 0 | number:'1.0-1' }}g</strong>
-        </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar bar-calories" [style.width.%]="macroPercentages().calories"></div>
       </div>
-
-      <!-- Fat progress -->
-      <div class="progress-card">
-        <div class="progress-card-header">
-          <span class="icon-label">🥑 Fat</span>
-          <span class="pct-badge bg-fat">{{ macroPercentages().fat }}%</span>
-        </div>
-        <div class="progress-card-value">
-          {{ todaySummary()?.consumed?.fat || 0 | number:'1.0-1' }}g <span class="unit-label">/ {{ todaySummary()?.targets?.fat || 65 }}g</span>
-        </div>
-        <div class="progress-bar-container">
-          <div class="progress-bar bar-fat" [style.width.%]="macroPercentages().fat"></div>
-        </div>
-        <div class="progress-card-footer">
-          Remaining: <strong>{{ todaySummary()?.remaining?.fat || 0 | number:'1.0-1' }}g</strong>
-        </div>
-      </div>
-
-      <!-- Fiber progress -->
-      <div class="progress-card">
-        <div class="progress-card-header">
-          <span class="icon-label">🥦 Fiber</span>
-          <span class="pct-badge bg-fiber">{{ macroPercentages().fiber }}%</span>
-        </div>
-        <div class="progress-card-value">
-          {{ todaySummary()?.consumed?.fiber || 0 | number:'1.0-1' }}g <span class="unit-label">/ {{ todaySummary()?.targets?.fiber || 25 }}g</span>
-        </div>
-        <div class="progress-bar-container">
-          <div class="progress-bar bar-fiber" [style.width.%]="macroPercentages().fiber"></div>
-        </div>
-        <div class="progress-card-footer">
-          Remaining: <strong>{{ todaySummary()?.remaining?.fiber || 0 | number:'1.0-1' }}g</strong>
-        </div>
+      <div class="progress-card-footer">
+        Remaining: <strong>{{ todaySummary()?.remaining?.calories || 0 | number:'1.0-0' }} kcal</strong>
       </div>
     </div>
 
-    <!-- Quick logging form and Meal Groups Grid -->
-    <div class="diet-content-grid">
-      <!-- Food log form card -->
-      <div class="card form-card">
-        <div class="card-header">
-          <h2 class="card-title">{{ isEditMode() ? '✏️ Edit Meal Log' : '➕ Log a Meal' }}</h2>
-          @if (isEditMode()) {
-            <button class="btn btn-secondary btn-sm" (click)="resetFoodForm()">Cancel Edit</button>
-          }
-        </div>
-        <form [formGroup]="foodForm" (ngSubmit)="onSubmitFood()">
-          <!-- Food Name with Autocomplete dropdown -->
-          <div class="form-group autocomplete-container">
-            <label for="food_name">Food Name</label>
-            <input 
-              id="food_name" 
-              type="text" 
-              formControlName="food_name" 
-              placeholder="Search or enter food (e.g. Roti, Paneer...)"
-              class="form-control"
-              autocomplete="off"
-            />
-            @if (isSearching()) {
-              <div class="autocomplete-spinner"></div>
-            }
-            @if (searchResults().length > 0) {
-              <ul class="autocomplete-results">
-                @for (item of searchResults(); track item.name) {
-                  <li (click)="selectSearchResult(item)">
-                    <span class="item-name">{{ item.name }}</span>
-                    <span class="item-serving">({{ item.quantity }} {{ item.unit }}) — {{ item.calories }} kcal</span>
-                  </li>
-                }
-              </ul>
-            }
-            @if (foodForm.get('food_name')?.touched && foodForm.get('food_name')?.invalid) {
-              <small class="error-msg">Food name is required (max 100 characters).</small>
-            }
-          </div>
-
-          <!-- Quantity and unit -->
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label for="quantity">Quantity</label>
-              <input 
-                id="quantity" 
-                type="number" 
-                step="0.01" 
-                formControlName="quantity" 
-                class="form-control"
-                (change)="onQuantityChange()"
-              />
-              @if (foodForm.get('quantity')?.touched && foodForm.get('quantity')?.invalid) {
-                <small class="error-msg">Quantity must be greater than 0.</small>
-              }
-            </div>
-            <div class="form-group col-6">
-              <label for="unit">Unit</label>
-              <select id="unit" formControlName="unit" class="form-control" (change)="onQuantityChange()">
-                <option value="pieces">pieces</option>
-                <option value="grams">grams</option>
-                <option value="cups">cups</option>
-                <option value="ml">ml</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Meal category and date logged -->
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label for="meal_type">Meal Category</label>
-              <select id="meal_type" formControlName="meal_type" class="form-control">
-                <option value="BREAKFAST">Breakfast</option>
-                <option value="LUNCH">Lunch</option>
-                <option value="DINNER">Dinner</option>
-                <option value="SNACKS">Snacks</option>
-              </select>
-            </div>
-            <div class="form-group col-6">
-              <label for="created_at">Date & Time</label>
-              <input id="created_at" type="datetime-local" formControlName="created_at" class="form-control" />
-            </div>
-          </div>
-
-          <div class="divider-text">Nutritional Information (Scales Automatically)</div>
-
-          <!-- Calories, Protein, Carbs, Fat, Fiber grid -->
-          <div class="form-row">
-            <div class="form-group col-4">
-              <label for="calories">Calories (kcal)</label>
-              <input id="calories" type="number" formControlName="calories" class="form-control" />
-            </div>
-            <div class="form-group col-4">
-              <label for="protein">Protein (g)</label>
-              <input id="protein" type="number" step="0.1" formControlName="protein" class="form-control" />
-            </div>
-            <div class="form-group col-4">
-              <label for="carbs">Carbs (g)</label>
-              <input id="carbs" type="number" step="0.1" formControlName="carbs" class="form-control" />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label for="fat">Fat (g)</label>
-              <input id="fat" type="number" step="0.1" formControlName="fat" class="form-control" />
-            </div>
-            <div class="form-group col-6">
-              <label for="fiber">Fiber (g)</label>
-              <input id="fiber" type="number" step="0.1" formControlName="fiber" class="form-control" />
-            </div>
-          </div>
-
-          <button 
-            type="submit" 
-            class="btn btn-primary btn-block" 
-            [disabled]="isSubmitting() || foodForm.invalid"
-          >
-            {{ isSubmitting() ? 'Saving log...' : (isEditMode() ? '💾 Save Changes' : '📝 Log Meal Item') }}
-          </button>
-        </form>
+    <!-- Protein progress -->
+    <div class="progress-card">
+      <div class="progress-card-header">
+        <span class="icon-label">🥩 Protein</span>
+        <span class="pct-badge bg-protein">{{ macroPercentages().protein }}%</span>
       </div>
+      <div class="progress-card-value">
+        {{ todaySummary()?.consumed?.protein || 0 | number:'1.0-1' }}g <span class="unit-label">/ {{
+          todaySummary()?.targets?.protein || 120 }}g</span>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar bar-protein" [style.width.%]="macroPercentages().protein"></div>
+      </div>
+      <div class="progress-card-footer">
+        Remaining: <strong>{{ todaySummary()?.remaining?.protein || 0 | number:'1.0-1' }}g</strong>
+      </div>
+    </div>
 
-      <!-- Meal logs grouped by category -->
-      <div class="meal-categories-list">
-        @for (mealKey of ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACKS']; track mealKey) {
-          @let data = mealsCategorized()[mealKey];
-          <div class="card meal-group-card">
-            <div class="meal-group-header">
-              <div>
-                <h3 class="meal-group-title">
-                  @if (mealKey === 'BREAKFAST') { 🥞 }
-                  @else if (mealKey === 'LUNCH') { 🍱 }
-                  @else if (mealKey === 'DINNER') { 🍽️ }
-                  @else { 🍎 }
-                  {{ mealKey | titlecase }}
-                </h3>
-                <span class="meal-group-subtotals">
-                  P: {{ data.protein | number:'1.0-1' }}g | C: {{ data.carbs | number:'1.0-1' }}g | F: {{ data.fat | number:'1.0-1' }}g
-                </span>
-              </div>
-              <span class="meal-group-calories text-calories">{{ data.calories | number:'1.0-0' }} kcal</span>
-            </div>
+    <!-- Carbohydrates progress -->
+    <div class="progress-card">
+      <div class="progress-card-header">
+        <span class="icon-label">🌾 Carbohydrates</span>
+        <span class="pct-badge bg-carbs">{{ macroPercentages().carbs }}%</span>
+      </div>
+      <div class="progress-card-value">
+        {{ todaySummary()?.consumed?.carbs || 0 | number:'1.0-1' }}g <span class="unit-label">/ {{
+          todaySummary()?.targets?.carbs || 230 }}g</span>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar bar-carbs" [style.width.%]="macroPercentages().carbs"></div>
+      </div>
+      <div class="progress-card-footer">
+        Remaining: <strong>{{ todaySummary()?.remaining?.carbs || 0 | number:'1.0-1' }}g</strong>
+      </div>
+    </div>
 
-            <div class="meal-items-container">
-              @if (data.list.length === 0) {
-                <div class="empty-meal-placeholder">No foods logged in this meal category.</div>
-              } @else {
-                @for (item of data.list; track item.id) {
-                  <div class="meal-item-row">
-                    <div class="meal-item-info">
-                      <span class="meal-item-name">{{ item.food_name }}</span>
-                      <span class="meal-item-serving">{{ item.quantity }} {{ item.unit }}</span>
-                    </div>
-                    <div class="meal-item-nutrition">
-                      <span class="meal-item-kcal">{{ item.calories | number:'1.0-0' }} kcal</span>
-                      <span class="meal-item-macros">P: {{ item.protein }}g | C: {{ item.carbs }}g | F: {{ item.fat }}g</span>
-                    </div>
-                    <div class="meal-item-actions">
-                      <button class="action-icon-btn btn-edit" title="Edit entry" (click)="editRecord(item)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                          <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                      </button>
-                      <button class="action-icon-btn btn-delete" title="Delete entry" (click)="deleteRecord(item.id!)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <polyline points="3 6 5 6 21 6"/>
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                }
-              }
-            </div>
-          </div>
+    <!-- Fat progress -->
+    <div class="progress-card">
+      <div class="progress-card-header">
+        <span class="icon-label">🥑 Fat</span>
+        <span class="pct-badge bg-fat">{{ macroPercentages().fat }}%</span>
+      </div>
+      <div class="progress-card-value">
+        {{ todaySummary()?.consumed?.fat || 0 | number:'1.0-1' }}g <span class="unit-label">/ {{
+          todaySummary()?.targets?.fat || 65 }}g</span>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar bar-fat" [style.width.%]="macroPercentages().fat"></div>
+      </div>
+      <div class="progress-card-footer">
+        Remaining: <strong>{{ todaySummary()?.remaining?.fat || 0 | number:'1.0-1' }}g</strong>
+      </div>
+    </div>
+
+    <!-- Fiber progress -->
+    <div class="progress-card">
+      <div class="progress-card-header">
+        <span class="icon-label">🥦 Fiber</span>
+        <span class="pct-badge bg-fiber">{{ macroPercentages().fiber }}%</span>
+      </div>
+      <div class="progress-card-value">
+        {{ todaySummary()?.consumed?.fiber || 0 | number:'1.0-1' }}g <span class="unit-label">/ {{
+          todaySummary()?.targets?.fiber || 25 }}g</span>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar bar-fiber" [style.width.%]="macroPercentages().fiber"></div>
+      </div>
+      <div class="progress-card-footer">
+        Remaining: <strong>{{ todaySummary()?.remaining?.fiber || 0 | number:'1.0-1' }}g</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick logging form and Meal Groups Grid -->
+  <div class="diet-content-grid">
+    <!-- Food log form card -->
+    <div class="card form-card">
+      <div class="card-header">
+        <h2 class="card-title">{{ isEditMode() ? '✏️ Edit Meal Log' : '➕ Log a Meal' }}</h2>
+        @if (isEditMode()) {
+        <button class="btn btn-secondary btn-sm" (click)="resetFoodForm()">Cancel Edit</button>
         }
       </div>
+      <form [formGroup]="foodForm" (ngSubmit)="onSubmitFood()">
+        <!-- Food Name with Autocomplete dropdown -->
+        <div class="form-group autocomplete-container">
+          <label for="food_name">Food Name</label>
+          <input id="food_name" type="text" formControlName="food_name"
+            placeholder="Search or enter food (e.g. Roti, Paneer...)" class="form-control" autocomplete="off" />
+          @if (isSearching()) {
+          <div class="autocomplete-spinner"></div>
+          }
+          @if (searchResults().length > 0) {
+          <ul class="autocomplete-results">
+            @for (item of searchResults(); track item.name) {
+            <li (click)="selectSearchResult(item)">
+              <span class="item-name">{{ item.name }}</span>
+              <span class="item-serving">({{ item.quantity }} {{ item.unit }}) — {{ item.calories }} kcal</span>
+            </li>
+            }
+          </ul>
+          }
+          @if (foodForm.get('food_name')?.touched && foodForm.get('food_name')?.invalid) {
+          <small class="error-msg">Food name is required (max 100 characters).</small>
+          }
+        </div>
+
+        <!-- Quantity and unit -->
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="quantity">Quantity</label>
+            <input id="quantity" type="number" step="0.01" formControlName="quantity" class="form-control"
+              (change)="onQuantityChange()" />
+            @if (foodForm.get('quantity')?.touched && foodForm.get('quantity')?.invalid) {
+            <small class="error-msg">Quantity must be greater than 0.</small>
+            }
+          </div>
+          <div class="form-group col-6">
+            <label for="unit">Unit</label>
+            <select id="unit" formControlName="unit" class="form-control" (change)="onQuantityChange()">
+              <option value="pieces">pieces</option>
+              <option value="grams">grams</option>
+              <option value="cups">cups</option>
+              <option value="ml">ml</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Meal category and date logged -->
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="meal_type">Meal Category</label>
+            <select id="meal_type" formControlName="meal_type" class="form-control">
+              <option value="BREAKFAST">Breakfast</option>
+              <option value="LUNCH">Lunch</option>
+              <option value="DINNER">Dinner</option>
+              <option value="SNACKS">Snacks</option>
+            </select>
+          </div>
+          <div class="form-group col-6">
+            <label for="created_at">Date & Time</label>
+            <input id="created_at" type="datetime-local" formControlName="created_at" class="form-control" />
+          </div>
+        </div>
+
+        <div class="divider-text">Nutritional Information (Scales Automatically)</div>
+
+        <!-- Calories, Protein, Carbs, Fat, Fiber grid -->
+        <div class="form-row">
+          <div class="form-group col-4">
+            <label for="calories">Calories (kcal)</label>
+            <input id="calories" type="number" formControlName="calories" class="form-control" />
+          </div>
+          <div class="form-group col-4">
+            <label for="protein">Protein (g)</label>
+            <input id="protein" type="number" step="0.1" formControlName="protein" class="form-control" />
+          </div>
+          <div class="form-group col-4">
+            <label for="carbs">Carbs (g)</label>
+            <input id="carbs" type="number" step="0.1" formControlName="carbs" class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="fat">Fat (g)</label>
+            <input id="fat" type="number" step="0.1" formControlName="fat" class="form-control" />
+          </div>
+          <div class="form-group col-6">
+            <label for="fiber">Fiber (g)</label>
+            <input id="fiber" type="number" step="0.1" formControlName="fiber" class="form-control" />
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" [disabled]="isSubmitting() || foodForm.invalid">
+          {{ isSubmitting() ? 'Saving log...' : (isEditMode() ? '💾 Save Changes' : '📝 Log Meal Item') }}
+        </button>
+      </form>
     </div>
+
+    <!-- Meal logs grouped by category -->
+    <div class="meal-categories-list">
+      @for (mealKey of ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACKS']; track mealKey) {
+      @let data = mealsCategorized()[mealKey];
+      <div class="card meal-group-card">
+        <div class="meal-group-header">
+          <div>
+            <h3 class="meal-group-title">
+              @if (mealKey === 'BREAKFAST') { 🥞 }
+              @else if (mealKey === 'LUNCH') { 🍱 }
+              @else if (mealKey === 'DINNER') { 🍽️ }
+              @else { 🍎 }
+              {{ mealKey | titlecase }}
+            </h3>
+            <span class="meal-group-subtotals">
+              P: {{ data.protein | number:'1.0-1' }}g | C: {{ data.carbs | number:'1.0-1' }}g | F: {{ data.fat |
+              number:'1.0-1' }}g
+            </span>
+          </div>
+          <span class="meal-group-calories text-calories">{{ data.calories | number:'1.0-0' }} kcal</span>
+        </div>
+
+        <div class="meal-items-container">
+          @if (data.list.length === 0) {
+          <div class="empty-meal-placeholder">No foods logged in this meal category.</div>
+          } @else {
+          @for (item of data.list; track item.id) {
+          <div class="meal-item-row">
+            <div class="meal-item-info">
+              <span class="meal-item-name">{{ item.food_name }}</span>
+              <span class="meal-item-serving">{{ item.quantity }} {{ item.unit }}</span>
+            </div>
+            <div class="meal-item-nutrition">
+              <span class="meal-item-kcal">{{ item.calories | number:'1.0-0' }} kcal</span>
+              <span class="meal-item-macros">P: {{ item.protein }}g | C: {{ item.carbs }}g | F: {{ item.fat }}g</span>
+            </div>
+            <div class="meal-item-actions">
+              <button class="action-icon-btn btn-edit" title="Edit entry" (click)="editRecord(item)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+              </button>
+              <button class="action-icon-btn btn-delete" title="Delete entry" (click)="deleteRecord(item.id!)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          }
+          }
+        </div>
+      </div>
+      }
+    </div>
+  </div>
   }
 
   <!-- TAB 2: HISTORY LOGS -->
   @if (activeTab() === 'history' && !isLoading()) {
-    <div class="card history-card">
-      <div class="history-filters-row">
-        <!-- Date picker -->
-        <div class="filter-group date-picker-group">
-          <label for="history_date">Select Log Date</label>
-          <input 
-            id="history_date" 
-            type="date" 
-            [value]="historyFilterDate()" 
-            (change)="historyFilterDate.set($any($event.target).value); loadHistoryData()"
-            class="form-control"
-          />
-        </div>
-
-        <!-- Search input -->
-        <div class="filter-group search-filter-group">
-          <label for="history_search">Search Food</label>
-          <input 
-            id="history_search" 
-            type="text" 
-            placeholder="Search within this day's logs..." 
-            [value]="historySearchQuery()"
-            (input)="historySearchQuery.set($any($event.target).value)"
-            class="form-control"
-          />
-        </div>
+  <div class="card history-card">
+    <div class="history-filters-row">
+      <!-- Date picker -->
+      <div class="filter-group date-picker-group">
+        <label for="history_date">Select Log Date</label>
+        <input id="history_date" type="date" [value]="historyFilterDate()"
+          (change)="historyFilterDate.set($any($event.target).value); loadHistoryData()" class="form-control" />
       </div>
 
-      <!-- History Table -->
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Food Item</th>
-              <th>Meal Type</th>
-              <th>Serving Size</th>
-              <th>Calories</th>
-              <th>Protein</th>
-              <th>Carbs</th>
-              <th>Fat</th>
-              <th>Fiber</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @if (filteredHistoryFoods().length === 0) {
-              <tr>
-                <td colspan="10" class="empty-table-cell">No matching meals found for this date.</td>
-              </tr>
-            } @else {
-              @for (item of filteredHistoryFoods(); track item.id) {
-                <tr>
-                  <td>{{ item.created_at | date:'shortTime' }}</td>
-                  <td><strong>{{ item.food_name }}</strong></td>
-                  <td><span class="badge badge-meal-type">{{ item.meal_type }}</span></td>
-                  <td>{{ item.quantity }} {{ item.unit }}</td>
-                  <td><strong>{{ item.calories }} kcal</strong></td>
-                  <td class="text-protein">{{ item.protein }}g</td>
-                  <td class="text-carbs">{{ item.carbs }}g</td>
-                  <td class="text-fat">{{ item.fat }}g</td>
-                  <td class="text-fiber">{{ item.fiber }}g</td>
-                  <td>
-                    <div class="table-actions">
-                      <button class="action-icon-btn btn-delete" title="Delete log" (click)="deleteRecord(item.id!)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <polyline points="3 6 5 6 21 6"/>
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            }
-          </tbody>
-        </table>
+      <!-- Search input -->
+      <div class="filter-group search-filter-group">
+        <label for="history_search">Search Food</label>
+        <input id="history_search" type="text" placeholder="Search within this day's logs..."
+          [value]="historySearchQuery()" (input)="historySearchQuery.set($any($event.target).value)"
+          class="form-control" />
       </div>
     </div>
+
+    <!-- History Table -->
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Food Item</th>
+            <th>Meal Type</th>
+            <th>Serving Size</th>
+            <th>Calories</th>
+            <th>Protein</th>
+            <th>Carbs</th>
+            <th>Fat</th>
+            <th>Fiber</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (filteredHistoryFoods().length === 0) {
+          <tr>
+            <td colspan="10" class="empty-table-cell">No matching meals found for this date.</td>
+          </tr>
+          } @else {
+          @for (item of filteredHistoryFoods(); track item.id) {
+          <tr>
+            <td>{{ item.created_at | date:'shortTime' }}</td>
+            <td><strong>{{ item.food_name }}</strong></td>
+            <td><span class="badge badge-meal-type">{{ item.meal_type }}</span></td>
+            <td>{{ item.quantity }} {{ item.unit }}</td>
+            <td><strong>{{ item.calories }} kcal</strong></td>
+            <td class="text-protein">{{ item.protein }}g</td>
+            <td class="text-carbs">{{ item.carbs }}g</td>
+            <td class="text-fat">{{ item.fat }}g</td>
+            <td class="text-fiber">{{ item.fiber }}g</td>
+            <td>
+              <div class="table-actions">
+                <button class="action-icon-btn btn-delete" title="Delete log" (click)="deleteRecord(item.id!)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
   }
 
   <!-- TAB 3: TARGET GOAL SETTING -->
   @if (activeTab() === 'goals' && !isLoading()) {
-    <div class="diet-content-grid">
-      <!-- Calculator form card -->
-      <div class="card form-card">
-        <div class="card-header">
-          <h2 class="card-title">📐 Target Goal Calculator</h2>
-        </div>
-        <form [formGroup]="goalForm" (ngSubmit)="onSubmitGoals()">
-          <!-- Goal type -->
-          <div class="form-group">
-            <label for="goal_type">Primary Goal</label>
-            <select id="goal_type" formControlName="goal_type" class="form-control">
-              <option value="WEIGHT_LOSS">Weight Loss (Caloric Deficit)</option>
-              <option value="WEIGHT_GAIN">Weight Gain (Caloric Surplus)</option>
-              <option value="MUSCLE_GAIN">Muscle Gain (High Protein Surplus)</option>
-              <option value="MAINTENANCE">Maintenance (Caloric Equilibrium)</option>
-            </select>
-          </div>
-
-          <div class="divider-text">User Parameters (Mifflin-St Jeor)</div>
-
-          <!-- Age and gender -->
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label for="age">Age (years)</label>
-              <input id="age" type="number" formControlName="age" class="form-control" />
-            </div>
-            <div class="form-group col-6">
-              <label for="gender">Gender</label>
-              <select id="gender" formControlName="gender" class="form-control">
-                <option value="MALE">Male</option>
-                <option value="FEMALE">Female</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Height and Weight -->
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label for="height">Height (cm)</label>
-              <input id="height" type="number" formControlName="height" class="form-control" />
-            </div>
-            <div class="form-group col-6">
-              <label for="weight">Weight (kg)</label>
-              <input id="weight" type="number" formControlName="weight" class="form-control" />
-            </div>
-          </div>
-
-          <!-- Activity Index -->
-          <div class="form-group">
-            <label for="activityLevel">Activity Level</label>
-            <select id="activityLevel" formControlName="activityLevel" class="form-control">
-              <option value="LOW">Low (Sedentary / Desk Job)</option>
-              <option value="MEDIUM">Medium (Moderate workouts 3-5 days/week)</option>
-              <option value="HIGH">High (Intense physical training daily)</option>
-            </select>
-          </div>
-
-          <button 
-            type="button" 
-            class="btn btn-secondary btn-block" 
-            (click)="calculateAndApplyGoals()"
-          >
-            ⚙️ Calculate recommended targets
-          </button>
-
-          <div class="divider-text">Target Goals Definitions</div>
-
-          <!-- Targets parameters -->
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label for="target_calories">Daily Calories Target</label>
-              <input id="target_calories" type="number" formControlName="target_calories" class="form-control" />
-            </div>
-            <div class="form-group col-6">
-              <label for="target_protein">Daily Protein (g)</label>
-              <input id="target_protein" type="number" formControlName="target_protein" class="form-control" />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label for="target_carbs">Daily Carbs (g)</label>
-              <input id="target_carbs" type="number" formControlName="target_carbs" class="form-control" />
-            </div>
-            <div class="form-group col-6">
-              <label for="target_fat">Daily Fat (g)</label>
-              <input id="target_fat" type="number" formControlName="target_fat" class="form-control" />
-            </div>
-          </div>
-
-          <button 
-            type="submit" 
-            class="btn btn-primary btn-block" 
-            [disabled]="isSubmitting() || goalForm.invalid"
-          >
-            {{ isSubmitting() ? 'Updating goals...' : '🎯 Save Targets' }}
-          </button>
-        </form>
+  <div class="diet-content-grid">
+    <!-- Calculator form card -->
+    <div class="card form-card">
+      <div class="card-header">
+        <h2 class="card-title">📐 Target Goal Calculator</h2>
       </div>
-
-      <!-- Target details explanation card -->
-      <div class="card form-card explanation-card">
-        <div class="card-header">
-          <h2 class="card-title">📖 Goal Calculations Guide</h2>
+      <form [formGroup]="goalForm" (ngSubmit)="onSubmitGoals()">
+        <!-- Goal type -->
+        <div class="form-group">
+          <label for="goal_type">Primary Goal</label>
+          <select id="goal_type" formControlName="goal_type" class="form-control">
+            <option value="WEIGHT_LOSS">Weight Loss (Caloric Deficit)</option>
+            <option value="WEIGHT_GAIN">Weight Gain (Caloric Surplus)</option>
+            <option value="MUSCLE_GAIN">Muscle Gain (High Protein Surplus)</option>
+            <option value="MAINTENANCE">Maintenance (Caloric Equilibrium)</option>
+          </select>
         </div>
-        <div class="explanation-content">
-          <p>We calculate your targets based on the <strong>Mifflin-St Jeor Equation</strong> to identify your Basal Metabolic Rate (BMR), and scale it using your Activity Factor to identify your Total Daily Energy Expenditure (TDEE):</p>
-          <ul>
-            <li><strong>Weight Loss:</strong> TDEE - 500 kcal. Promotes safe fat loss at ~0.5kg per week.</li>
-            <li><strong>Weight Gain:</strong> TDEE + 500 kcal. Supports weight increases.</li>
-            <li><strong>Muscle Gain:</strong> TDEE + 300 kcal. Surplus optimized for lean skeletal mass additions.</li>
-            <li><strong>Maintenance:</strong> Balanced TDEE matching your daily caloric output.</li>
-          </ul>
-          
-          <div class="goal-info-box">
-            <h4>Current Active Goal:</h4>
-            <div class="goal-summary-badge">{{ currentGoal()?.goal_type || 'MAINTENANCE' | uppercase }}</div>
-            <table class="goal-info-table">
-              <tr>
-                <td>Calories target:</td>
-                <td><strong>{{ currentGoal()?.target_calories || 2000 }} kcal</strong></td>
-              </tr>
-              <tr>
-                <td>Protein target:</td>
-                <td><strong>{{ currentGoal()?.target_protein || 120 }}g</strong></td>
-              </tr>
-              <tr>
-                <td>Carbs target:</td>
-                <td><strong>{{ currentGoal()?.target_carbs || 230 }}g</strong></td>
-              </tr>
-              <tr>
-                <td>Fat target:</td>
-                <td><strong>{{ currentGoal()?.target_fat || 65 }}g</strong></td>
-              </tr>
-            </table>
+
+        <div class="divider-text">User Parameters (Mifflin-St Jeor)</div>
+
+        <!-- Age and gender -->
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="age">Age (years)</label>
+            <input id="age" type="number" formControlName="age" class="form-control" />
           </div>
+          <div class="form-group col-6">
+            <label for="gender">Gender</label>
+            <select id="gender" formControlName="gender" class="form-control">
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Height and Weight -->
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="height">Height (cm)</label>
+            <input id="height" type="number" formControlName="height" class="form-control" />
+          </div>
+          <div class="form-group col-6">
+            <label for="weight">Weight (kg)</label>
+            <input id="weight" type="number" formControlName="weight" class="form-control" />
+          </div>
+        </div>
+
+        <!-- Activity Index -->
+        <div class="form-group">
+          <label for="activityLevel">Activity Level</label>
+          <select id="activityLevel" formControlName="activityLevel" class="form-control">
+            <option value="LOW">Low (Sedentary / Desk Job)</option>
+            <option value="MEDIUM">Medium (Moderate workouts 3-5 days/week)</option>
+            <option value="HIGH">High (Intense physical training daily)</option>
+          </select>
+        </div>
+
+        <button type="button" class="btn btn-secondary btn-block" (click)="calculateAndApplyGoals()">
+          ⚙️ Calculate recommended targets
+        </button>
+
+        <div class="divider-text">Target Goals Definitions</div>
+
+        <!-- Targets parameters -->
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="target_calories">Daily Calories Target</label>
+            <input id="target_calories" type="number" formControlName="target_calories" class="form-control" />
+          </div>
+          <div class="form-group col-6">
+            <label for="target_protein">Daily Protein (g)</label>
+            <input id="target_protein" type="number" formControlName="target_protein" class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="target_carbs">Daily Carbs (g)</label>
+            <input id="target_carbs" type="number" formControlName="target_carbs" class="form-control" />
+          </div>
+          <div class="form-group col-6">
+            <label for="target_fat">Daily Fat (g)</label>
+            <input id="target_fat" type="number" formControlName="target_fat" class="form-control" />
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" [disabled]="isSubmitting() || goalForm.invalid">
+          {{ isSubmitting() ? 'Updating goals...' : '🎯 Save Targets' }}
+        </button>
+      </form>
+    </div>
+
+    <!-- Target details explanation card -->
+    <div class="card form-card explanation-card">
+      <div class="card-header">
+        <h2 class="card-title">📖 Goal Calculations Guide</h2>
+      </div>
+      <div class="explanation-content">
+        <p>We calculate your targets based on the <strong>Mifflin-St Jeor Equation</strong> to identify your Basal
+          Metabolic Rate (BMR), and scale it using your Activity Factor to identify your Total Daily Energy Expenditure
+          (TDEE):</p>
+        <ul>
+          <li><strong>Weight Loss:</strong> TDEE - 500 kcal. Promotes safe fat loss at ~0.5kg per week.</li>
+          <li><strong>Weight Gain:</strong> TDEE + 500 kcal. Supports weight increases.</li>
+          <li><strong>Muscle Gain:</strong> TDEE + 300 kcal. Surplus optimized for lean skeletal mass additions.</li>
+          <li><strong>Maintenance:</strong> Balanced TDEE matching your daily caloric output.</li>
+        </ul>
+
+        <div class="goal-info-box">
+          <h4>Current Active Goal:</h4>
+          <div class="goal-summary-badge">{{ currentGoal()?.goal_type || 'MAINTENANCE' | uppercase }}</div>
+          <table class="goal-info-table">
+            <tr>
+              <td>Calories target:</td>
+              <td><strong>{{ currentGoal()?.target_calories || 2000 }} kcal</strong></td>
+            </tr>
+            <tr>
+              <td>Protein target:</td>
+              <td><strong>{{ currentGoal()?.target_protein || 120 }}g</strong></td>
+            </tr>
+            <tr>
+              <td>Carbs target:</td>
+              <td><strong>{{ currentGoal()?.target_carbs || 230 }}g</strong></td>
+            </tr>
+            <tr>
+              <td>Fat target:</td>
+              <td><strong>{{ currentGoal()?.target_fat || 65 }}g</strong></td>
+            </tr>
+          </table>
         </div>
       </div>
     </div>
+  </div>
   }
 
   <!-- TAB 4: VISUAL ANALYTICS -->
@@ -528,7 +506,7 @@
     <div class="card-header">
       <h2 class="card-title">📈 Nutrition Trends (Past 7 Days)</h2>
     </div>
-    
+
     <div class="charts-grid-container">
       <div class="chart-card-wrapper">
         <h4>Daily Caloric Consumption</h4>
@@ -552,20 +530,22 @@
           <canvas #macroChartCanvas></canvas>
         </div>
       </div>
-      
+
       <div class="chart-card-wrapper insights-wrapper">
         <h4>Weekly Analytics Insights</h4>
         <div class="insights-list-content">
           <div class="insight-bullet">
             <span class="bullet-icon">⭐</span>
             <div class="bullet-text">
-              <strong>Protein Consistency:</strong> You met your daily protein target of 120g on 5 out of the last 7 days.
+              <strong>Protein Consistency:</strong> You met your daily protein target of 120g on 5 out of the last 7
+              days.
             </div>
           </div>
           <div class="insight-bullet">
             <span class="bullet-icon">🌱</span>
             <div class="bullet-text">
-              <strong>Caloric Target:</strong> Your average intake of 1850 kcal aligns perfectly with your deficit goals.
+              <strong>Caloric Target:</strong> Your average intake of 1850 kcal aligns perfectly with your deficit
+              goals.
             </div>
           </div>
           <div class="insight-bullet">
@@ -581,30 +561,30 @@
 
   <!-- TAB 5: AI RECOMMENDATIONS ENGINE -->
   @if (activeTab() === 'recommendations' && !isLoading()) {
-    <div class="recommendations-container">
-      @if (recommendations().length === 0) {
-        <div class="card empty-recs-card">
-          <h3>No specific macro deficiencies today!</h3>
-          <p>Your nutrition logs show you are perfectly on track with all your targets today. Keep up the amazing work!</p>
-        </div>
-      } @else {
-        @for (category of recommendations(); track category.category) {
-          <div class="card recommendation-card">
-            <div class="rec-card-header">
-              <h3 class="rec-category-title">{{ category.category }}</h3>
-              <p class="rec-reason-text">{{ category.reason }}</p>
-            </div>
-            <div class="rec-foods-grid">
-              @for (food of category.foods; track food.name) {
-                <div class="rec-food-item">
-                  <div class="rec-food-name">{{ food.name }}</div>
-                  <div class="rec-food-description">{{ food.description }}</div>
-                </div>
-              }
-            </div>
-          </div>
-        }
-      }
+  <div class="recommendations-container">
+    @if (recommendations().length === 0) {
+    <div class="card empty-recs-card">
+      <h3>No specific macro deficiencies today!</h3>
+      <p>Your nutrition logs show you are perfectly on track with all your targets today. Keep up the amazing work!</p>
     </div>
+    } @else {
+    @for (category of recommendations(); track category.category) {
+    <div class="card recommendation-card">
+      <div class="rec-card-header">
+        <h3 class="rec-category-title">{{ category.category }}</h3>
+        <p class="rec-reason-text">{{ category.reason }}</p>
+      </div>
+      <div class="rec-foods-grid">
+        @for (food of category.foods; track food.name) {
+        <div class="rec-food-item">
+          <div class="rec-food-name">{{ food.name }}</div>
+          <div class="rec-food-description">{{ food.description }}</div>
+        </div>
+        }
+      </div>
+    </div>
+    }
+    }
+  </div>
   }
 </div>

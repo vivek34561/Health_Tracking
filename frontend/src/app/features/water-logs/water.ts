@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { WaterService, WaterRecord } from '../../core/services/water.service';
+import { GoalService } from '../../core/services/goal.service';
 
 @Component({
   selector: 'app-water',
@@ -13,6 +14,7 @@ import { WaterService, WaterRecord } from '../../core/services/water.service';
 export class WaterComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly waterService = inject(WaterService);
+  private readonly goalService = inject(GoalService);
 
   readonly logs = signal<WaterRecord[]>([]);
   readonly isLoading = signal(false);
@@ -52,6 +54,21 @@ export class WaterComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchHistory();
+    this.fetchWaterGoal();
+  }
+
+  fetchWaterGoal(): void {
+    this.goalService.getGoals().subscribe({
+      next: (goalsList) => {
+        const waterGoal = goalsList.find(g => g.goal_type?.toUpperCase() === 'WATER' && g.status === 'ACTIVE');
+        if (waterGoal) {
+          this.targetMl.set(waterGoal.target_value);
+        }
+      },
+      error: () => {
+        // Fallback silently to the default target
+      }
+    });
   }
 
   fetchHistory(): void {

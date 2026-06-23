@@ -1,6 +1,11 @@
 import os
+from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+
+# Load env variables into os.environ at initialization
+env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
+load_dotenv(dotenv_path=env_path)
 
 
 class Settings(BaseSettings):
@@ -8,6 +13,8 @@ class Settings(BaseSettings):
     hf_token: str = ""
     tavily_api_key: str = ""
     langchain_api_key: str = ""
+    langchain_tracing_v2: str = "false"
+    langchain_project: str = "Health-Tracking-App"
     express_api_url: str = "http://localhost:5000"
     chroma_persist_dir: str = "./chroma_db"
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"

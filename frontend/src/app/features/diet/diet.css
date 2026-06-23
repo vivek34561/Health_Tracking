@@ -81,8 +81,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* ===== NUTRITION CARDS GRID ===== */
@@ -143,10 +148,22 @@
   background: var(--color-primary);
 }
 
-.bg-protein { background-color: #e74c3c; }
-.bg-carbs { background-color: #f1c40f; color: #333; }
-.bg-fat { background-color: #2ecc71; }
-.bg-fiber { background-color: #1abc9c; }
+.bg-protein {
+  background-color: #e74c3c;
+}
+
+.bg-carbs {
+  background-color: #f1c40f;
+  color: #333;
+}
+
+.bg-fat {
+  background-color: #2ecc71;
+}
+
+.bg-fiber {
+  background-color: #1abc9c;
+}
 
 .progress-card-value {
   font-size: 20px;
@@ -172,11 +189,25 @@
   border-radius: 3px;
 }
 
-.bar-calories { background: var(--color-primary); }
-.bar-protein { background: #e74c3c; }
-.bar-carbs { background: #f1c40f; }
-.bar-fat { background: #2ecc71; }
-.bar-fiber { background: #1abc9c; }
+.bar-calories {
+  background: var(--color-primary);
+}
+
+.bar-protein {
+  background: #e74c3c;
+}
+
+.bar-carbs {
+  background: #f1c40f;
+}
+
+.bar-fat {
+  background: #2ecc71;
+}
+
+.bar-fiber {
+  background: #1abc9c;
+}
 
 .progress-card-footer {
   font-size: 11.5px;
@@ -256,8 +287,13 @@
   gap: var(--space-3);
 }
 
-.col-6 { flex: 0 0 calc(50% - 6px); }
-.col-4 { flex: 0 0 calc(33.33% - 8px); }
+.col-6 {
+  flex: 0 0 calc(50% - 6px);
+}
+
+.col-4 {
+  flex: 0 0 calc(33.33% - 8px);
+}
 
 .divider-text {
   font-size: 11px;
@@ -381,7 +417,7 @@
   top: 36px;
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(0,0,0,0.05);
+  border: 2px solid rgba(0, 0, 0, 0.05);
   border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 0.8s infinite linear;
@@ -430,7 +466,9 @@
   font-weight: 800;
 }
 
-.text-calories { color: var(--color-primary); }
+.text-calories {
+  color: var(--color-primary);
+}
 
 .meal-items-container {
   display: flex;
@@ -552,8 +590,14 @@
   gap: 6px;
 }
 
-.date-picker-group { flex: 0 0 200px; }
-.search-filter-group { flex: 1; min-width: 260px; }
+.date-picker-group {
+  flex: 0 0 200px;
+}
+
+.search-filter-group {
+  flex: 1;
+  min-width: 260px;
+}
 
 /* Table styles */
 .table-responsive {
@@ -590,7 +634,7 @@
 }
 
 .data-table tbody tr:hover {
-  background: rgba(66,133,244,0.01);
+  background: rgba(66, 133, 244, 0.01);
 }
 
 .badge {
@@ -606,10 +650,25 @@
   border: 1px solid var(--color-border-dark);
 }
 
-.text-protein { color: #e74c3c; font-weight: 600; }
-.text-carbs { color: #f39c12; font-weight: 600; }
-.text-fat { color: #2ecc71; font-weight: 600; }
-.text-fiber { color: #1abc9c; font-weight: 600; }
+.text-protein {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.text-carbs {
+  color: #f39c12;
+  font-weight: 600;
+}
+
+.text-fat {
+  color: #2ecc71;
+  font-weight: 600;
+}
+
+.text-fiber {
+  color: #1abc9c;
+  font-weight: 600;
+}
 
 .empty-table-cell {
   text-align: center;
@@ -679,7 +738,7 @@
 .goal-info-table td {
   padding: 6px 0;
   font-size: 13px;
-  border-bottom: 1px dashed rgba(0,0,0,0.04);
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.04);
 }
 
 .goal-info-table tr:last-child td {
@@ -850,9 +909,11 @@
   .diet-content-grid {
     grid-template-columns: 1fr;
   }
+
   .charts-grid-container {
     grid-template-columns: 1fr;
   }
+
   .rec-foods-grid {
     grid-template-columns: 1fr;
   }
@@ -862,13 +923,17 @@
   .nutrition-summary-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .form-row {
     flex-direction: column;
     gap: 0;
   }
-  .col-6, .col-4 {
+
+  .col-6,
+  .col-4 {
     flex: 0 0 100%;
   }
+
   .diet-page {
     padding: var(--space-4);
   }

@@ -46,7 +46,7 @@ async function testGoals() {
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
-        goal_type: 'Water',
+        goal_type: 'Steps',
         target_value: targetValue,
         current_value: 0
       })
@@ -68,7 +68,7 @@ async function testGoals() {
 
     // Verify properties
     const item = historyData[0];
-    if (item.goal_type !== 'Water' || Number(item.target_value) !== targetValue || Number(item.current_value) !== 0) {
+    if (item.goal_type !== 'Steps' || Number(item.target_value) !== targetValue || Number(item.current_value) !== 0) {
       throw new Error('Retrieved fields values do not match input values.');
     }
 
