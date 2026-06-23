@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: health-tracking-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: health_tracking
+      MYSQL_ROOT_PASSWORD: vivek2175
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Execute SQL scripts alphabetically to initialize schema first, then migrations
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./db/migration_diet.sql:/docker-entrypoint-initdb.d/2-migration-diet.sql
+
+  backend-express:
+    build:
+      context: ./backend-express
+      dockerfile: Dockerfile
+    container_name: health-tracking-express
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      - PORT=5000
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=vivek2175
+      - DB_NAME=health_tracking
+      - JWT_SECRET=a612be8511fdc9177244d4119119fc61c02a41ad798b363f434cfadd44ddce0c
+      - JWT_EXPIRES_IN=24h
+
+  backend-fastapi:
+    build:
+      context: ./backend-fastapi
+      dockerfile: Dockerfile
+    container_name: health-tracking-fastapi
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - backend-express
+    env_file:
+      - ./backend-fastapi/.env
+    environment:
+      # Connects to the Express API container inside the Docker bridge network
+      - EXPRESS_API_URL=http://backend-express:5000
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: health-tracking-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend-express
+      - backend-fastapi
+
+volumes:
+  mysql_data:
