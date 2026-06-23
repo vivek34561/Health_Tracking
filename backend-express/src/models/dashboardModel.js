@@ -60,8 +60,8 @@ async function getDailyActivityCount(userId, date) {
  */
 async function getActiveGoals(userId, date) {
   const [rows] = await db.execute(
-    'SELECT goal_type AS goalType, target_value AS targetValue, current_value AS currentValue FROM goals WHERE user_id = ? AND status = "ACTIVE" AND ? BETWEEN start_date AND end_date',
-    [userId, date]
+    'SELECT goal_type AS goalType, target_value AS targetValue, current_value AS currentValue FROM goals WHERE user_id = ? AND status = ? AND ? BETWEEN start_date AND end_date',
+    [userId, 'ACTIVE', date]
   );
   return rows;
 }

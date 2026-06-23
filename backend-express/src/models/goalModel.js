@@ -87,8 +87,8 @@ async function syncGoalProgress(userId, goalType) {
   
   // Find all active goals of this type for the user
   const [activeGoals] = await db.execute(
-    'SELECT id, start_date, end_date FROM goals WHERE user_id = ? AND goal_type = ? AND status = "ACTIVE"',
-    [userId, typeUpper]
+    'SELECT id, start_date, end_date FROM goals WHERE user_id = ? AND goal_type = ? AND status = ?',
+    [userId, typeUpper, 'ACTIVE']
   );
 
   if (activeGoals.length === 0) return;
