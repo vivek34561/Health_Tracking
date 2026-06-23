@@ -2,6 +2,7 @@ const express = require('express');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = express.Router();
+const FASTAPI_URL = process.env.FASTAPI_URL || 'http://localhost:8000';
 
 // Protect AI routes with the JWT auth middleware
 router.use(authMiddleware);
@@ -12,7 +13,7 @@ router.post('/chat', async (req, res) => {
     const userId = req.user.id;
     const token = req.headers.authorization;
 
-    const response = await fetch('http://localhost:8000/api/chat', {
+    const response = await fetch(`${FASTAPI_URL}/api/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -54,7 +55,7 @@ router.post('/predict-bodyfat', async (req, res) => {
   try {
     const token = req.headers.authorization;
 
-    const response = await fetch('http://localhost:8000/api/predict-bodyfat', {
+    const response = await fetch(`${FASTAPI_URL}/api/predict-bodyfat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
