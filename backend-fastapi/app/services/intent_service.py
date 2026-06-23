@@ -3,6 +3,8 @@ from enum import Enum
 from typing import Tuple, List, Dict
 from app.services.groq_service import get_groq_client
 from app.core.config import get_settings
+from langchain_groq import ChatGroq
+from langchain_core.messages import SystemMessage, HumanMessage
 
 class Intent(str, Enum):
     CREATE = "CREATE"
@@ -43,16 +45,17 @@ def classify_intent(message: str) -> Tuple[Intent, float]:
     )
     
     try:
-        response = client.chat.completions.create(
+        llm = ChatGroq(
             model=settings.groq_model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": message}
-            ],
-            temperature=0.0,
-            response_format={"type": "json_object"}
-        )
-        res_text = response.choices[0].message.content.strip()
+            api_key=settings.groq_api_key,
+            temperature=0.0
+        ).bind(response_format={"type": "json_object"})
+        
+        response = llm.invoke([
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=message)
+        ])
+        res_text = response.content.strip()
         data = json.loads(res_text)
         intent_str = data.get("intent", "").upper()
         confidence = float(data.get("confidence", 1.0))

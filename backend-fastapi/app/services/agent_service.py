@@ -3,8 +3,8 @@ from typing import Annotated, List, Dict, Any, Optional
 from typing_extensions import TypedDict
 from langgraph.graph import StateGraph, END
 from langgraph.graph.message import add_messages
-from langchain_core.messages import AIMessage, ToolMessage, HumanMessage
-from langchain_core.utils.function_calling import convert_to_openai_tool
+from langchain_core.messages import AIMessage, ToolMessage, HumanMessage, SystemMessage
+from langchain_groq import ChatGroq
 
 from app.core.config import get_settings
 from app.services.groq_service import get_groq_client
@@ -31,10 +31,6 @@ class AgentState(TypedDict):
 
 async def agent_node(state: AgentState) -> Dict[str, Any]:
     settings = get_settings()
-    client = get_groq_client()
-    
-    # Convert tools to OpenAI format for Groq
-    openai_tools = [convert_to_openai_tool(t) for t in ALL_HEALTH_TOOLS]
     
     # 1. System Prompt construction
     context_parts = []
@@ -76,53 +72,54 @@ async def agent_node(state: AgentState) -> Dict[str, Any]:
     if context_parts:
         system_prompt += "\n".join(context_parts) + "\n\n"
         
-    groq_messages = [{"role": "system", "content": system_prompt}]
+    messages_to_send = [SystemMessage(content=system_prompt)]
     
-    # Map state messages to Groq format
+    # Map state messages to standard langchain messages
     for msg in state["messages"]:
         if isinstance(msg, dict):
-            groq_messages.append(msg)
-        elif isinstance(msg, HumanMessage):
-            groq_messages.append({"role": "user", "content": msg.content})
-        elif isinstance(msg, AIMessage):
-            formatted_ai = {"role": "assistant", "content": msg.content or ""}
-            if msg.tool_calls:
-                formatted_tool_calls = []
-                for tc in msg.tool_calls:
-                    formatted_tool_calls.append({
-                        "id": tc.get("id"),
-                        "type": "function",
-                        "function": {
-                            "name": tc.get("name"),
-                            "arguments": json.dumps(tc.get("args"))
-                        }
-                    })
-                formatted_ai["tool_calls"] = formatted_tool_calls
-            groq_messages.append(formatted_ai)
-        elif isinstance(msg, ToolMessage):
-            groq_messages.append({
-                "role": "tool",
-                "tool_call_id": msg.tool_call_id,
-                "name": msg.name,
-                "content": msg.content
-            })
+            role = msg.get("role")
+            content = msg.get("content", "")
+            if role == "user":
+                messages_to_send.append(HumanMessage(content=content))
+            elif role == "assistant":
+                tool_calls = msg.get("tool_calls", [])
+                formatted_tc = []
+                for tc in tool_calls:
+                    if "function" in tc:
+                        formatted_tc.append({
+                            "name": tc["function"].get("name"),
+                            "args": json.loads(tc["function"].get("arguments", "{}")),
+                            "id": tc.get("id")
+                        })
+                    else:
+                        formatted_tc.append(tc)
+                messages_to_send.append(AIMessage(content=content, tool_calls=formatted_tc))
+            elif role == "system":
+                messages_to_send.append(SystemMessage(content=content))
+            elif role == "tool":
+                messages_to_send.append(ToolMessage(
+                    content=msg.get("content", ""),
+                    name=msg.get("name", ""),
+                    tool_call_id=msg.get("tool_call_id", "")
+                ))
+        else:
+            messages_to_send.append(msg)
             
-    # Call Groq
-    response = client.chat.completions.create(
+    # Call Groq via LangChain's ChatGroq wrapper (so it logs token usage to LangSmith)
+    llm = ChatGroq(
         model=settings.groq_model,
-        messages=groq_messages,
-        tools=openai_tools,
-        tool_choice="auto"
+        api_key=settings.groq_api_key,
+        temperature=0.0
     )
-    
-    choice = response.choices[0].message
+    llm_with_tools = llm.bind_tools(ALL_HEALTH_TOOLS)
+    choice = await llm_with_tools.ainvoke(messages_to_send)
     
     # Intercept delete actions before execution
     if choice.tool_calls:
         for tc in choice.tool_calls:
-            tool_name = tc.function.name
+            tool_name = tc.get("name")
             if tool_name.startswith("delete_"):
-                args = json.loads(tc.function.arguments)
+                args = tc.get("args", {})
                 record_id = args.get("record_id")
                 entity = tool_name.replace("delete_", "").replace("_log", "")
                 
@@ -146,27 +143,8 @@ async def agent_node(state: AgentState) -> Dict[str, Any]:
                 }
                 
         # Handle non-delete tool calls
-        langchain_tool_calls = []
-        for tc in choice.tool_calls:
-            args = {}
-            if tc.function.arguments:
-                try:
-                    if isinstance(tc.function.arguments, str):
-                        args = json.loads(tc.function.arguments)
-                    elif isinstance(tc.function.arguments, dict):
-                        args = tc.function.arguments
-                except Exception:
-                    pass
-            if not isinstance(args, dict):
-                args = {}
-                
-            langchain_tool_calls.append({
-                "name": tc.function.name,
-                "args": args,
-                "id": tc.id
-            })
         return {
-            "messages": [AIMessage(content=choice.content or "", tool_calls=langchain_tool_calls)],
+            "messages": [choice],
             "sources_used": sources_used
         }
         
@@ -192,7 +170,7 @@ async def agent_node(state: AgentState) -> Dict[str, Any]:
         }
         
     return {
-        "messages": [AIMessage(content=choice.content)],
+        "messages": [choice],
         "reply": choice.content,
         "structured_data": structured_data,
         "sources_used": sources_used
