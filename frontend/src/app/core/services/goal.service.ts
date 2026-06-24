@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { getExpressUrl } from '../config/api.config';
 
 export interface GoalRecord {
   id: number;
@@ -17,7 +18,7 @@ export interface GoalRecord {
 })
 export class GoalService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'https://health-tracking-1-ji8x.onrender.com/api/goals';
+  private readonly baseUrl = `${getExpressUrl()}/api/goals`;
 
   /**
    * Get active and historical goals

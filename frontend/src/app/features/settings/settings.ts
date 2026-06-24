@@ -4,6 +4,7 @@ import { ThemeService } from '../../core/services/theme.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { ToastService } from '../../core/services/toast.service';
 import { AuthService } from '../../core/services/auth.service';
+import { getExpressUrl } from '../../core/config/api.config';
 
 @Component({
   selector: 'app-settings',
@@ -61,7 +62,7 @@ export class SettingsComponent {
 
   private checkBackendStatus(): void {
     this.backendStatus.set('checking');
-    fetch('https://health-tracking-1-ji8x.onrender.com/api/health', { signal: AbortSignal.timeout(5000) })
+    fetch(`${getExpressUrl()}/api/health`, { signal: AbortSignal.timeout(5000) })
       .then(r => this.backendStatus.set(r.ok ? 'online' : 'offline'))
       .catch(() => this.backendStatus.set('offline'));
   }

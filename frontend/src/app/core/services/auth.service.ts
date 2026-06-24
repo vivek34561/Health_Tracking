@@ -2,6 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
+import { getExpressUrl } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
 
-  private readonly baseUrl = 'https://health-tracking-1-ji8x.onrender.com/api/auth';
+  private readonly baseUrl = `${getExpressUrl()}/api/auth`;
 
   // Signals for responsive state management
   readonly currentUser = signal<any>(null);

@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { getExpressUrl } from '../config/api.config';
 
 export interface BodyFatRequest {
   density: number;
@@ -32,7 +33,7 @@ export interface BodyFatResponse {
 })
 export class BodyFatService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'https://health-tracking-1-ji8x.onrender.com/api/ai/predict-bodyfat';
+  private readonly baseUrl = `${getExpressUrl()}/api/ai/predict-bodyfat`;
 
   /**
    * Predict body fat percentage based on body measurements

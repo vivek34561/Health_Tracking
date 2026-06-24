@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { getExpressUrl } from '../config/api.config';
 
 export interface WaterRecord {
   id: number;
@@ -13,7 +14,7 @@ export interface WaterRecord {
 })
 export class WaterService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'https://health-tracking-1-ji8x.onrender.com/api/water';
+  private readonly baseUrl = `${getExpressUrl()}/api/water`;
 
   /**
    * Get water logs history

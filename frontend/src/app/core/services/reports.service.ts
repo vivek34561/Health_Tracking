@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { getExpressUrl } from '../config/api.config';
 
 export interface WeeklyReport {
   week: string;
@@ -45,7 +46,7 @@ export interface ProgressReport {
 })
 export class ReportsService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'https://health-tracking-1-ji8x.onrender.com/api/reports';
+  private readonly baseUrl = `${getExpressUrl()}/api/reports`;
 
   getWeeklyReport(): Observable<WeeklyReport> {
     return this.http.get<WeeklyReport>(`${this.baseUrl}/weekly`);

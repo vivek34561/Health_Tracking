@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { getExpressUrl } from '../config/api.config';
 
 export interface DashboardSummary {
   waterToday: number;
@@ -18,7 +19,7 @@ export interface DashboardSummary {
 })
 export class DashboardService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'https://health-tracking-1-ji8x.onrender.com/api/dashboard';
+  private readonly baseUrl = `${getExpressUrl()}/api/dashboard`;
 
   /**
    * Get today's dashboard summary

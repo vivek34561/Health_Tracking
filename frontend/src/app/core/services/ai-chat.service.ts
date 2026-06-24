@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from './auth.service';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { getExpressUrl, getFastApiUrl } from '../config/api.config';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -45,8 +46,8 @@ export class AiChatService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
 
-  private readonly GATEWAY_URL = 'https://health-tracking-1-ji8x.onrender.com/api/ai';
-  private readonly FASTAPI_URL = 'https://health-backend-fastapi.onrender.com';
+  private readonly GATEWAY_URL = `${getExpressUrl()}/api/ai`;
+  private readonly FASTAPI_URL = getFastApiUrl();
 
   readonly messages = signal<ChatMessage[]>([
     {
