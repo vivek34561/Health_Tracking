@@ -4,14 +4,30 @@ import sys
 # Ensure parent directory is in sys.path so app.* imports work when run directly from within the app folder
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api import chat, upload, health, bodyfat_predict
+from app.services.telegram_bot import start_telegram_bot
+import asyncio
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Start Telegram Bot background loop
+    task = asyncio.create_task(start_telegram_bot())
+    yield
+    # Stop Telegram Bot background loop
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
 
 app = FastAPI(
     title="HealthAI — AI Service",
     description="AI Health Coach, Medical Report RAG, and Unified Assistant",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 # CORS — allow Angular dev server and production

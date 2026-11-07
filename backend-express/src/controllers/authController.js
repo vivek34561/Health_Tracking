@@ -287,11 +287,123 @@ async function changePassword(req, res) {
   }
 }
 
+/**
+ * Link user to Telegram Chat ID
+ */
+async function linkTelegram(req, res) {
+  try {
+    const userId = req.user.id;
+    const { telegram_chat_id } = req.body;
+
+    if (!telegram_chat_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'telegram_chat_id is required.'
+      });
+    }
+
+    const linked = await userModel.linkTelegramChatId(userId, telegram_chat_id);
+    if (!linked) {
+      return res.status(404).json({
+        success: false,
+        message: 'Failed to link Telegram. User not found.'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Telegram account linked successfully'
+    });
+  } catch (error) {
+    console.error('Link Telegram error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'An error occurred while linking Telegram.'
+    });
+  }
+}
+
+/**
+ * Login via Telegram Chat ID and pre-shared secret
+ */
+async function telegramLogin(req, res) {
+  try {
+    const { telegram_chat_id, telegram_secret } = req.body;
+
+    if (!telegram_chat_id || !telegram_secret) {
+      return res.status(400).json({
+        success: false,
+        message: 'telegram_chat_id and telegram_secret are required.'
+      });
+    }
+
+    // Verify secret
+    const expectedSecret = process.env.TELEGRAM_SECRET || 'fallback_telegram_secret_health_123';
+    if (telegram_secret !== expectedSecret) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid telegram secret.'
+      });
+    }
+
+    // Find user by telegram chat ID
+    const user = await userModel.findByTelegramChatId(telegram_chat_id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'No HealthAI account linked to this Telegram ID.'
+      });
+    }
+
+    // Check status
+    if (user.status !== 'ACTIVE') {
+      return res.status(403).json({
+        success: false,
+        message: `Account is ${user.status.toLowerCase()}. Please contact support.`
+      });
+    }
+
+    // Generate JWT
+    const jwtSecret = process.env.JWT_SECRET || 'super_secret_jwt_key_123!_health_tracking';
+    const jwtExpiry = process.env.JWT_EXPIRES_IN || '24h';
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      jwtSecret,
+      { expiresIn: jwtExpiry }
+    );
+
+    // Get user profile
+    const profile = await userModel.getProfile(user.id);
+
+    return res.status(200).json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        age: profile ? profile.age : null,
+        height: profile && profile.height ? parseFloat(profile.height) : null,
+        weight: profile && profile.weight ? parseFloat(profile.weight) : null,
+        gender: profile ? toTitleCase(profile.gender) : null,
+        activityLevel: profile ? toTitleCase(profile.activityLevel) : null
+      }
+    });
+  } catch (error) {
+    console.error('Telegram login error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'An error occurred during Telegram login.'
+    });
+  }
+}
+
 module.exports = {
   register,
   login,
   getProfile,
   updateProfile,
   logout,
-  changePassword
+  changePassword,
+  linkTelegram,
+  telegramLogin
 };

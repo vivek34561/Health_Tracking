@@ -22,6 +22,12 @@ class Settings(BaseSettings):
     max_tokens: int = 1024
     chunk_size: int = 800
     chunk_overlap: int = 100
+    telegram_bot_token: str = ""
+    telegram_secret: str = ""
+    # Pinecone settings
+    pinecone_api_key: str = ""
+    pinecone_environment: str = ""
+    pinecone_index_name: str = "health-tracking"
 
     class Config:
         env_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))

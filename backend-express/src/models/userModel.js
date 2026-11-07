@@ -126,11 +126,32 @@ async function updatePassword(userId, newPasswordHash) {
   return result.affectedRows > 0;
 }
 
+/**
+ * Find user by Telegram chat ID
+ */
+async function findByTelegramChatId(telegramChatId) {
+  const [rows] = await db.execute('SELECT * FROM users WHERE telegram_chat_id = ?', [telegramChatId]);
+  return rows[0] || null;
+}
+
+/**
+ * Link user to Telegram chat ID
+ */
+async function linkTelegramChatId(userId, telegramChatId) {
+  const [result] = await db.execute(
+    'UPDATE users SET telegram_chat_id = ? WHERE id = ?',
+    [telegramChatId, userId]
+  );
+  return result.affectedRows > 0;
+}
+
 module.exports = {
   findByEmail,
   findById,
   createUser,
   getProfile,
   updateProfile,
-  updatePassword
+  updatePassword,
+  findByTelegramChatId,
+  linkTelegramChatId
 };
